@@ -1,5 +1,34 @@
-
 #include "Bot.h"
+
+
+std::vector<std::string> ArgumentsCommand(std::string command) {
+    size_t indexStart = 1;
+    size_t indexEnd; 
+    
+    std::string argument;
+    std::vector<std::string> arguments;
+
+    while ((indexEnd = command.find(SEPARATOR, indexStart)) != std::string::npos) {
+        argument = command.substr(indexStart, indexEnd - indexStart);
+        indexStart = indexEnd + 1;
+        arguments.push_back(argument);
+    }
+
+    arguments.push_back(command.substr(indexStart));
+    arguments.erase(arguments.begin());
+    
+    return arguments;
+}
+
+
+std::string ConcatString(std::vector<std::string> concat) {
+    std::string concatString;
+    for (std::string word: concat) {
+        concatString += word + " ";
+    }
+    return concatString;
+}
+
 
 int InitBotCommands(TgBot::Bot &bot) {
     bot.getEvents().onCommand("start", [&bot](TgBot::Message::Ptr message) {
@@ -8,6 +37,12 @@ int InitBotCommands(TgBot::Bot &bot) {
 
     std::cout << "Command init successful" << "\n";
     return Success;
+}
+
+
+int GetHash(std::string String) {
+    std::hash<std::string> hashThisString;
+    return int(hashThisString(String));
 }
 
 int main() {
@@ -24,10 +59,10 @@ int main() {
             return;
         }
         else if(StringTools::startsWith(message->text, "/create")) {
-            conn.AddEvent(, 1);
+            std::string nameEvent = ConcatString(ArgumentsCommand(message->text));
+            conn.AddEvent(nameEvent, GetHash(nameEvent));
             return;
         }
-        bot.getApi().sendMessage(message->chat->id, "Your message is: " + message->text);
     });
     TgBot::TgLongPoll longPoll(bot);
     while (true) {
