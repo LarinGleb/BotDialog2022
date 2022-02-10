@@ -45,7 +45,10 @@ class Connector {
         delete con_;
     }
 
-    void AddEvent(const std::string nameEvent, const int idEvent);
+    void AddEvent(const std::string nameEvent, const size_t idEvent);
+    void DeleteEvent(const size_t idEvent);
+    void AddReview(const std::string review, const size_t idEvent, const size_t idUser);
+    void ExecuteRequest(const std::string request);
 
   private:
     sql::Driver*     driver_;

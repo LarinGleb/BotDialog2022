@@ -22,3 +22,5 @@ include_directories(${FULL_PATH_TO_MYSQL_CONNECTOR_CPP_DIR}/include)
 link_directories(${FULL_PATH_TO_MYSQL_CONNECTOR_CPP_DIR}/lib64)
 
 target_link_libraries(DataBaseLib /usr/local/mysql/connector-c++-/lib64/debug/libmysqlcppconn.so.9.8.0.26 /usr/local/mysql/connector-c++-/lib64/debug/libmysqlcppconn8.so.2.8.0.26 ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${CURL_LIBRARIES})
+
+message("Added connector")
