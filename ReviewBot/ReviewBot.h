@@ -4,7 +4,9 @@
 
 #include <tgbot/tgbot.h>
 #include <iostream>
+#include "../BotTools/BotTools.h"
+#include <vector>
 
-int CreateEvent(const std::string eventName, const int eventId);
+int InitReviewBot(TgBot::Bot& bot);
 
 #endif

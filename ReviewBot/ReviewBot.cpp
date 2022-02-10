@@ -1,6 +1,12 @@
 
-#include "ReviewBot.h"
+#include "BotTools.h"
 
-int CreateEventconst(std::string eventName, int id eventId) {
-    
+int InitReviewBot(TgBot::Bot& bot) {
+    TgBot::InlineKeyboardMarkup::Ptr keyboard(new TgBot::InlineKeyboardMarkup);
+    std::vector<TgBot::InlineKeyboardButton::Ptr> startReviewBotkeyBoard;
+
+    startReviewBotkeyBoard.push_back(CreateButtonTG("Add event", "AddEvent"));
+    keyboard->inlineKeyboard.push_back(startReviewBotkeyBoard);
+    return 0;
+
 }
