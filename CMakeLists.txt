@@ -14,9 +14,7 @@ find_package(CURL)
 
 include_directories(/usr/local/include ${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIR})
 
-
 add_executable(Dialog Bot.cpp)
-set_target_properties(Dialog PROPERTIES LINKER_LANGUAGE CXX)
 
 add_subdirectory(Connector)
 message("Included connector")
