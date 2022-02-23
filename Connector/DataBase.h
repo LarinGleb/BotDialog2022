@@ -6,6 +6,7 @@
 
 #include <sstream>
 #include <iostream>
+#include <vector>
 
 #include <jdbc.h>
 #include <xdevapi.h>
@@ -49,6 +50,7 @@ class Connector {
     void DeleteEvent(const size_t idEvent);
     void AddReview(const std::string review, const size_t idEvent, const size_t idUser);
     void ExecuteRequest(const std::string request);
+    std::vector<std::string> GetAllEvents();
 
   private:
     sql::Driver*     driver_;
