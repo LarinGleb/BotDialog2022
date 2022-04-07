@@ -49,6 +49,8 @@ class Connector {
     void AddEvent(const std::string nameEvent, const size_t idEvent);
     void DeleteEvent(const size_t idEvent);
     void AddReview(const std::string review, const size_t idEvent, const size_t idUser);
+    void AddPo(const std::string& AddPodsk, const std::string Sex,const std::string Price, const bool EatOrNo, const TgBot::Message::Ptr& message, TgBot::Bot& bot);
+    void KnowPo(const std::string Sex, const std::string Price, const bool EatOrNo, const TgBot::Message::Ptr& message, const TgBot::Bot& bot);
     void ExecuteRequest(const std::string request);
     std::vector<std::string> GetAllEvents();
 

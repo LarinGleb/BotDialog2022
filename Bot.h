@@ -6,6 +6,7 @@
 #include "Connector/DataBase.h" // for working with sql
 #include <functional>  // for hashing
 #include "ReviewBot/ReviewBot.h"
+#include "SecretFriends/SecretFriends.h"
 
 
 // Errors and Succes keys
@@ -65,6 +66,10 @@ typedef enum createstate_t {
     WAITING_NAMETEACHER_CP_DELETE,
 } CreateState;
 
+typedef enum secretfriends_t {
+    WAITING_ONE,
+    WAITING_ADD
+} SecretFriendsState;
 
 // Get hash by string 
 size_t GetId(std::string String); 

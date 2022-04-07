@@ -25,9 +25,13 @@ message("Included bot tools")
 add_subdirectory(ReviewBot)
 message("Included Review Bot")
 
+add_subdirectory(SecretFriends)
+message("Include Secret Friends")
+
 target_link_libraries(Dialog DataBaseLib)
 target_link_libraries(Dialog Tools)
 target_link_libraries(Dialog ReviewBot)
+target_link_libraries(Dialog SecretFriends)
 
 target_link_libraries(Dialog /usr/local/lib/libTgBot.a ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${CURL_LIBRARIES})
 
@@ -35,3 +39,4 @@ target_link_libraries(Dialog /usr/local/lib/libTgBot.a ${CMAKE_THREAD_LIBS_INIT}
 add_dependencies(Dialog DataBaseLib)
 add_dependencies(Dialog Tools) 
 add_dependencies(Dialog ReviewBot)
+add_dependencies(Dialog SecretFriends)

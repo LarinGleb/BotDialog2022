@@ -16,10 +16,15 @@ std::vector<std::string> GetAllNamesCP(EventCP event) {
 }
 
 
-int InitBotCommands(TgBot::Bot& bot, ReviewBotState *ReviewState) {
+int InitBotCommands(TgBot::Bot& bot, ReviewBotState *ReviewState, SecretFriendsState *SecretState) {
     bot.getEvents().onCommand("start", [&bot, ReviewState](TgBot::Message::Ptr message) {
         *ReviewState = WAITING_COMMAND;
         InitReviewBot(bot, message);
+    });
+
+    bot.getEvents().onCommand("star", [&bot, SecretState](TgBot::Message::Ptr message) {
+        *SecretState = WAITING_ONE;
+        InitBotTD(bot, message);
     });
 
     std::cout << "Command init successful" << "\n";
@@ -45,6 +50,7 @@ int main() {
 
     ReviewBotState ReviewState = WAITING_INIT;
     CreateState CreateStateEvent = WAITING_CREATION;
+    SecretFriendsState SecretState = WAITING_ONE;
     bool waitingInput = false;
     int pageList = 0;
 
@@ -57,10 +63,15 @@ int main() {
     EventCP TempEventCP;
     int typeTempEvent = EVENT_NOT_CP;
     
+    std::string AddOrKnow;
+    std::string Sex;
+    std::string Price;
+    bool EatOrNo;
+    std::string AddPodsk;
 
     InitBotCommands(bot, &ReviewState);
     
-    bot.getEvents().onAnyMessage([&bot, &conn, &ReviewState, &events, &waitingInput, &inputMessage, &CreateStateEvent, &TempEvent, &TempCP](TgBot::Message::Ptr message) {
+    bot.getEvents().onAnyMessage([&bot, &conn, &ReviewState, &SecretState, &events, &AddPodsk, &Sex, &Price, &EatOrNo, &waitingInput, &inputMessage, &CreateStateEvent, &TempEvent, &TempCP](TgBot::Message::Ptr message) {
         if (StringTools::startsWith(message->text, "/start")) {
             return;
         }
@@ -172,10 +183,24 @@ int main() {
             default:
                 break;
         }
+
+        switch (SecretState)
+        {
+            case WAITING_ONE:
+               break;
+            
+            case WAITING_ADD:
+             AddPodsk = message->text;
+
+                    conn.AddPo(AddPodsk, Sex, Price, EatOrNo, message, bot);
+
+        default:
+            break;
+        }
     });
 
 
-    bot.getEvents().onCallbackQuery([&bot, &conn, &ReviewState, &pageList, &events, &waitingInput, &CreateStateEvent, &TempCP, &TempEventCP, &typeTempEvent](TgBot::CallbackQuery::Ptr query) {
+    bot.getEvents().onCallbackQuery([&bot, &conn, &ReviewState, &SecretState, &pageList, &events, &AddOrKnow, &Sex, &Price, &EatOrNo, &AddPodsk, &waitingInput, &CreateStateEvent, &TempCP, &TempEventCP, &typeTempEvent](TgBot::CallbackQuery::Ptr query) {
         
 
         // ----------- WORKING WITH LOT OF BUTTONS -----------
@@ -324,6 +349,25 @@ int main() {
             CreateStateEvent = WAITING_DATE_EVENT;
         }
 
+        // ----------- WORKING WITH SECRET FRIENDS -----------
+
+        else if ((StringTools::startsWith(query->data, "ForBoy")) || (StringTools::startsWith(query->data, "ForGirl")) || (StringTools::startsWith(query->data, "ForAll"))){ 
+            Sex = TDSex(bot, query);
+        }
+        else if((StringTools::startsWith(query->data, "Free")) || (StringTools::startsWith(query->data, "NoMuch")) || (StringTools::startsWith(query->data, "Average"))){
+            Price = TDPrice(bot, query);
+        }
+        else if((StringTools::startsWith(query->data, "Eat")) || (StringTools::startsWith(query->data, "NoEat"))){
+            EatOrNo = TDEatOrNo(bot, query);
+            if(AddOrKnow == "AddNew"){
+                SecretState = WAITING_ADD;
+                TDAddPodsk(bot, query);
+            }
+            else{
+                conn.KnowPo(Sex, Price, EatOrNo, query->message, bot);
+
+            }
+        }
         else {
             return;
         }
