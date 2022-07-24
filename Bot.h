@@ -60,7 +60,8 @@ struct user_t {
 
 };
 typedef struct user_t User;
-
+bool IsAdmin(const char* id);
+std::string GetPropertyFromFile(std::string fileDir);
 int GetIndex(const std::string array[], const std::string elem);
 
 int main(); // main function 

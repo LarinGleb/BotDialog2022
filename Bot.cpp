@@ -17,6 +17,39 @@ int GetIndex(const std::vector<std::string> array, const std::string elem) {
     return std::distance(std::begin(array), std::find(std::begin(array), std::end(array), elem));
 }
 
+bool IsAdmin(std::string id) {
+    int offset; 
+    std::string line;
+    std::ifstream admins;
+    admins.open ("../admins.txt");
+
+    if (admins.is_open())
+    {
+        while (!admins.eof())
+        {
+            std::getline(admins, line);
+            if ((offset = line.find(id, 0)) != std::string::npos) 
+            {
+                admins.close();
+                return true;
+            }
+        }
+        admins.close();
+    }
+    return false;
+}
+
+std::string GetPropertyFromFile(std::string fileDir) {
+    std::string property;
+    std::ifstream fileProperty (fileDir);
+    if (fileProperty.is_open())
+    {
+        std::getline(fileProperty,property);
+    }
+    fileProperty.close();
+    return property;
+
+}
 int main() {
 
     const std::string username = USER_NAME;
@@ -24,7 +57,9 @@ int main() {
     const std::string password = PASSWORD;
     db_api::Connector conn(hostname.c_str(), username.c_str(), password.c_str(), DIALOG_DB);
 
-    TgBot::Bot bot("1940339152:AAHzeE78ERa0LQDw_Ehj0rw6P01Z8j9eHPg");
+    std::string token = GetPropertyFromFile("../token.txt");
+    std::string passwordAdmin = GetPropertyFromFile("../password.txt");
+    TgBot::Bot bot(token);
     std::map<std::int64_t, User> Users = {};
     //Event.Clear();
     bot.getEvents().onAnyMessage([&bot, &Users, &conn](TgBot::Message::Ptr message) {
@@ -36,14 +71,14 @@ int main() {
         User user = Users[message->from->id];
         State* botState = user.BotState;
 
-        if (StringTools::startsWith(message->text, "/start")) {
+        if (StringTools::startsWith(message->text, "/start") || StringTools::startsWith(message->text, "/password")) {
             return;
         }
         
         switch (*botState)
         {   
             case W_START:
-                review_bot::InitBot(bot, chatId, true);
+                review_bot::InitBot(bot, chatId, IsAdmin(std::to_string(message->from->id)));
                 *botState = W_COMMAND_REVIEW;
                 break;
             case W_NAME:
@@ -92,7 +127,7 @@ int main() {
                 *botState = W_COMMAND_REVIEW;
                 bot.getApi().sendMessage(chatId, "Спасибо за отзыв!");
                 user.Clear();
-                review_bot::InitBot(bot, chatId, true);
+                review_bot::InitBot(bot, chatId, IsAdmin(std::to_string(message->from->id)));
                 
                 break;
             }
@@ -165,7 +200,7 @@ int main() {
             *botState = W_COMMAND_REVIEW;
             bot.getApi().sendMessage(chatId, "Спасибо за отзыв!");
             user.Clear();
-            review_bot::InitBot(bot, chatId, true);
+            review_bot::InitBot(bot, chatId, IsAdmin(std::to_string(query->from->id)));
         }
         else if (queryText == ADD_REVIEW) {
             *botState = CHOOSE_EVENT_REVIEW_ADD;
@@ -263,13 +298,29 @@ int main() {
         }
         State *botState = Users[message->from->id].BotState;
         *botState = W_COMMAND_REVIEW;
-        review_bot::InitBot(bot, message->chat->id, true);
+        review_bot::InitBot(bot, message->chat->id, IsAdmin(std::to_string(message->from->id)));
+    });
+
+    bot.getEvents().onCommand("password", [&bot, &passwordAdmin](TgBot::Message::Ptr message) {
+        std::stringstream ss(message->text);
+        std::vector<std::string> command;
+        std::string item;
+        while(std::getline(ss, item, ' ')) {
+            command.push_back(item);
+        }
+        if (passwordAdmin == command.at(1)) {
+            std::ofstream  admins;
+            admins.open("../admins.txt", std::ios::app);
+            admins << std::to_string(message->from->id) << std::endl;
+            admins.close();
+        }
+
     });
 
 
     TgBot::TgLongPoll longPoll(bot);
     while (true) {
-        std::cout << "Long poll started" << "\n";
+        std::cout << "Long poll started" << std::endl;
         longPoll.start();
     }
 
