@@ -15,7 +15,6 @@
 
 enum state_t {
     W_START,
-    W_COMMAND_REVIEW,
     CR_EVENT,
     W_NAME,
     W_TIME,

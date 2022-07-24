@@ -79,7 +79,7 @@ int main() {
         {   
             case W_START:
                 review_bot::InitBot(bot, chatId, IsAdmin(std::to_string(message->from->id)));
-                *botState = W_COMMAND_REVIEW;
+                *botState = W_START;
                 break;
             case W_NAME:
                 user.eventUser->SetName(message->text);
@@ -124,7 +124,7 @@ int main() {
                 conn.AddReview(*(user.nameEvent) , review_bot::EstString(user.reviewUser->ActiveEst()), 
                 review_bot::EstString(user.reviewUser->StructEst()), review_bot::EstString(user.reviewUser->CommandEst()), 
                 user.reviewUser->AdditionalReview(), user.reviewUser->MoreEvent());
-                *botState = W_COMMAND_REVIEW;
+                *botState = W_START;
                 bot.getApi().sendMessage(chatId, "Спасибо за отзыв!");
                 user.Clear();
                 review_bot::InitBot(bot, chatId, IsAdmin(std::to_string(message->from->id)));
@@ -184,7 +184,7 @@ int main() {
             
             std::remove(fileDir.c_str());
             review_bot::InitBot(bot, chatId, true);
-            *botState = W_COMMAND_REVIEW;
+            *botState = W_START;
         }
         
         if (queryText == YES || queryText == NO) {
@@ -197,7 +197,7 @@ int main() {
             conn.AddReview(*(user.nameEvent) , review_bot::EstString(user.reviewUser->ActiveEst()), 
             review_bot::EstString(user.reviewUser->StructEst()), review_bot::EstString(user.reviewUser->CommandEst()), 
             user.reviewUser->AdditionalReview(), user.reviewUser->MoreEvent());
-            *botState = W_COMMAND_REVIEW;
+            *botState = W_START;
             bot.getApi().sendMessage(chatId, "Спасибо за отзыв!");
             user.Clear();
             review_bot::InitBot(bot, chatId, IsAdmin(std::to_string(query->from->id)));
@@ -283,7 +283,7 @@ int main() {
                 conn.AddEvent(user.eventUser->Name(), user.eventUser->Time(), typesConfig[0], typesConfig[1], typesConfig[2]);
                 user.Clear();
                 bot.getApi().editMessageText("Спасибо за мероприятие!", chatId, query->message->messageId);
-                *botState = W_COMMAND_REVIEW;
+                *botState = W_START;
                 review_bot::InitBot(bot, chatId, true);
                 
             }
@@ -297,7 +297,7 @@ int main() {
             
         }
         State *botState = Users[message->from->id].BotState;
-        *botState = W_COMMAND_REVIEW;
+        *botState = W_START;
         review_bot::InitBot(bot, message->chat->id, IsAdmin(std::to_string(message->from->id)));
     });
 
