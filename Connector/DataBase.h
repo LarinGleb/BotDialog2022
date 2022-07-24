@@ -10,7 +10,12 @@
 
 #include <jdbc.h>
 #include <xdevapi.h>
+
 #include "tgbot/tgbot.h"
+
+#define DIALOG_DB "Dialog"
+#define EVENTS_TABLE "Events"
+#define REVIEW_TABLE "Reviews"
 
 namespace db_api {
 
@@ -46,11 +51,15 @@ class Connector {
         delete con_;
     }
 
-    void AddEvent(const std::string nameEvent, const size_t idEvent);
-    void DeleteEvent(const size_t idEvent);
-    void AddReview(const std::string review, const size_t idEvent, const size_t idUser);
+    void AddEvent(const std::string name, const time_t data, const int bodyType, const int structType, const int commandType);
+    void AddReview(const std::string name, const std::string activeEst, const std::string structEst, const std::string commandEst, const std::string review, const bool more);
+    std::vector<std::string> PossibleEvents();
+    std::vector<int> TypeEventByName(const std::string name);
     void ExecuteRequest(const std::string request);
-    std::vector<std::string> GetAllEvents();
+    std::vector<std::string> AllReviews(std::string name);
+    std::vector<std::vector<std::string>> AllEsts(std::string name);
+    std::string GetTime(std::string name);
+    std::vector<int> MoreEvent(std::string name);
 
   private:
     sql::Driver*     driver_;
@@ -59,4 +68,5 @@ class Connector {
 };
 }; // namespace db_api
 
+//
 #endif
