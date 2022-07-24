@@ -25,13 +25,23 @@ message("Included bot tools")
 add_subdirectory(ReviewBot)
 message("Included Review Bot")
 
+add_subdirectory(ReviewBot/Event)
+add_subdirectory(ReviewBot/Review)
+add_subdirectory(ReviewBot/Time)
+message("Included Review Bot utils")
+
 target_link_libraries(Dialog DataBaseLib)
 target_link_libraries(Dialog Tools)
 target_link_libraries(Dialog ReviewBot)
+target_link_libraries(Dialog Event)
+target_link_libraries(Dialog Review)
+target_link_libraries(Dialog Time)
 
 target_link_libraries(Dialog /usr/local/lib/libTgBot.a ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${CURL_LIBRARIES})
-
 
 add_dependencies(Dialog DataBaseLib)
 add_dependencies(Dialog Tools) 
 add_dependencies(Dialog ReviewBot)
+add_dependencies(Dialog Event) 
+add_dependencies(Dialog Review)
+add_dependencies(Dialog Time)
