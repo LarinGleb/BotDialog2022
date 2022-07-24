@@ -1,16 +1,15 @@
-
 #ifndef __KEY_BOARD_H__
-
 #define __KEY_BOARD_H__
+#include <map>
 
 #include <tgbot/tgbot.h>
 
+#define RETURN_MENU "ToMenu"
+
+typedef std::map<std::string, std::string> buttonQuery;
+
 TgBot::InlineKeyboardButton::Ptr CreateButtonTG(const std::string textButton, const std::string callBackData);
-
-// Return concated string of massive
-std::string ConcatString(std::vector<std::string> concat); 
-
- // Return massive of arguments of command
-std::vector<std::string> ArgumentsCommand(const std::string command);
+std::vector<TgBot::InlineKeyboardButton::Ptr> CreateLineButtons(const buttonQuery button);
+std::vector<TgBot::InlineKeyboardButton::Ptr> ButtonToMenu();
 
 #endif
