@@ -17,24 +17,20 @@ namespace review_bot {
     typedef std::vector<std::string> vector_string;
     class Review {
         private:
-            vector_string active_est;
-            vector_string struct_est;
-            vector_string command_est;
-
+            vector_string ests;
+            std::string name_event;
             std::string additional_review;
             bool more_event;
         public:
-            vector_string ActiveEst();
-            vector_string StructEst();
-            vector_string CommandEst();
-            std::string AdditionalReview();
+            vector_string Ests();
             bool MoreEvent();
+            std::string AdditionalReview();
+            std::string NameEvent();
 
             void SetMoreEvent(bool need);
-            void AddActiveEst(std::string est);
-            void AddStructEst(std::string est);
-            void AddCommandEst(std::string est);
+            void AddEst(std::string est);
             void AddReview(std::string review);
+            void SetNameEvent(std::string name);
     };
 
 };

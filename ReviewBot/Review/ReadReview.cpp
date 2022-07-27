@@ -8,21 +8,21 @@
 #include "../Review/Review.h"
 
 namespace review_bot {
-    std::vector<int> SeparateEst(std::string est) {
-        std::vector<int> estsVector = {};
+    std::vector<std::string> SeparateEst(std::string est) {
+        std::vector<std::string> estsVector = {};
 
         std::stringstream ss(est);
         std::string item;
         while(std::getline(ss, item, (char)SEPARATOR_DEFAULT)) {
-            estsVector.push_back(std::stoi(item));
+            estsVector.push_back(item);
         }
         return estsVector;
     }
 
-    std::string StatisticEst(std::vector<int> ests) {
+    std::string StatisticEst(std::vector<std::string> ests) {
         std::string statistic = std::string("");
         for (int i = 0; i <= 10; i ++) {
-            statistic += std::string("Количество оценок ") + std::to_string(i) + std::string(" составляет ") + std::to_string(std::count(ests.begin(), ests.end(), i)) + std::string(".\n");
+            statistic += std::string("Количество оценок ") + std::to_string(i) + std::string(" составляет ") + std::to_string(std::count(ests.begin(), ests.end(), std::to_string(i))) + std::string(".\n");
         }
         return statistic;
     }

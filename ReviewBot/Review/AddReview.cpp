@@ -11,29 +11,19 @@
 namespace review_bot {
     std::string EstString(review_bot::vector_string ests) {
         std::string estString = std::string("");
-        for (int i = 0; i < ests.size(); i ++) {
+        for (std::size_t i = 0; i < ests.size(); i ++) {
             estString += ests.at(i) + (i < ests.size() - 1 ? ";": "");
         }
         estString = (estString == "") ? NO_EST: estString;
         return estString;    
     }
 
-    bool ValidEst(std::string est) {
+    bool IsInt(std::string est) {
         if (!std::isdigit(est[0])) {
             return false;
         }
         return std::stoi(est) <= 10 && std::stoi(est) >= 0;
     }
-
-    int ChooseEvent(TgBot::Bot& bot, std::int64_t chatId, review_bot::vector_string names) {
-        TgBot::InlineKeyboardMarkup::Ptr eventsButtons(new TgBot::InlineKeyboardMarkup);
-        for(std::string name: names) {
-            eventsButtons->inlineKeyboard.push_back(CreateLineButtons({{name, name}}));
-        }
-        bot.getApi().sendMessage(chatId, "Вам необходимо будет писать лишь циферки, взависимости от вопроса! Для начала выберите мероприятие: ", false, 0, eventsButtons);
-        return 0;
-    }
-
     int MoreEventQuestions(TgBot::Bot& bot, std::int64_t chatId) {
         TgBot::InlineKeyboardMarkup::Ptr moreEvents(new TgBot::InlineKeyboardMarkup);
         moreEvents->inlineKeyboard.push_back(CreateLineButtons({{"Да", YES}, {"Нет", NO}}));
@@ -48,8 +38,8 @@ namespace review_bot {
         return 0;
     }
 
-    review_bot::vector_string ActiveQuestion(BodyType type) {
-        switch(type) {
+    review_bot::vector_string ActiveQuestion(int type) {
+        switch((review_bot::BodyType)type) {
             case MIND:
                 return review_bot::vector_string {"Оцените интеллектуальную сложность заданий по 10-и бальной шкале, где 0 - \"слишком сложно, вообще не понял/слишком легко\", а 10 - \"всё по моим силам!\"."};
             case RUNNING:
@@ -64,8 +54,8 @@ namespace review_bot {
         }   
     }
 
-    review_bot::vector_string StructQuestion(StructType type) {
-        switch(type) {
+    review_bot::vector_string StructQuestion(int type) {
+        switch((review_bot::StructType)type) {
             case CP:
                 return review_bot::vector_string {"Было ли понятны расположения КП? Оцените по 10-и бальной шкале, где 0 - \"в итоге я их на нашёл\", а 10 - \"всё интуитивно понятно\".", 
                                                   "Понятные ли было задания на КП? Оцените по 10-и бальной шкале, где 0 - \"вообще никто не решил\", а 10 - \"всё понятным, задание было классным!\".",
@@ -84,8 +74,8 @@ namespace review_bot {
         }
     }
 
-    review_bot::vector_string CommandQuestion(CommandType type) {
-        switch (type)
+    review_bot::vector_string CommandQuestion(int type) {
+        switch ((review_bot::CommandType)type)
         {
             case COMMAND:
                 return review_bot::vector_string{"Было ли вам комфортно в команде? Оцените от 0 до 10, где 0 - \"никогда больше не вернусь\", а 10 - \"хоть бы ещё раз попасть в неё\".", 
