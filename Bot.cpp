@@ -3,325 +3,338 @@
 #include <vector>
 #include <functional>  // for hashing
 #include <map>
-
+#include <stdio.h>
 #include <tgbot/tgbot.h> // bot th lib
 
+#include "Json/json.h"
 #include "ReviewBot/ReviewBot.h"
 #include "Bot.h"
 #include "Connector/DataBase.h" // for working with sql
 #include "BotTools/BotTools.h"
 #include "ReviewBot/Event/Event.h"
 #include "ReviewBot/Time/Time.h"
+#include "Error/ErrorSave.h"
 
-int GetIndex(const std::vector<std::string> array, const std::string elem) {
-    return std::distance(std::begin(array), std::find(std::begin(array), std::end(array), elem));
-}
-
-bool IsAdmin(std::string id) {
-    int offset; 
-    std::string line;
-    std::ifstream admins;
-    admins.open ("../admins.txt");
-
-    if (admins.is_open())
-    {
-        while (!admins.eof())
-        {
-            std::getline(admins, line);
-            if ((offset = line.find(id, 0)) != std::string::npos) 
-            {
-                admins.close();
-                return true;
-            }
-        }
-        admins.close();
-    }
-    return false;
-}
-
-std::string GetPropertyFromFile(std::string fileDir) {
-    std::string property;
-    std::ifstream fileProperty (fileDir);
-    if (fileProperty.is_open())
-    {
-        std::getline(fileProperty,property);
-    }
-    fileProperty.close();
-    return property;
-
-}
+#ifdef DEFAULT_JSON
+#define PATH_JSON "../defaultSettings.json"
+#else
+#define PATH_JSON "../Settings.json"
+#endif
 int main() {
+    try {
+        const std::string username = USER_NAME;
+        const std::string hostname = HOST_DB;
+        const std::string password = PASSWORD;
+        db_api::Connector conn(hostname.c_str(), username.c_str(), password.c_str(), DIALOG_DB);
+        std::string token = GetProperty("token", PATH_JSON);
+        std::string passwordAdmin = GetProperty("password", PATH_JSON);
+        TgBot::Bot bot(token);
+        std::map<std::int64_t, User> Users = {};
 
-    const std::string username = USER_NAME;
-    const std::string hostname = HOST_DB;
-    const std::string password = PASSWORD;
-    db_api::Connector conn(hostname.c_str(), username.c_str(), password.c_str(), DIALOG_DB);
+        bot.getEvents().onAnyMessage([&bot, &Users, &conn](TgBot::Message::Ptr message) {
+            if (Users.count(message->from->id) == 0) {
+                Users[message->from->id] = User();
 
-    std::string token = GetPropertyFromFile("../token.txt");
-    std::string passwordAdmin = GetPropertyFromFile("../password.txt");
-    TgBot::Bot bot(token);
-    std::map<std::int64_t, User> Users = {};
-    //Event.Clear();
-    bot.getEvents().onAnyMessage([&bot, &Users, &conn](TgBot::Message::Ptr message) {
-        if (Users.count(message->from->id) == 0) {
-            Users[message->from->id] = User();
-            
-        }
-        std::int64_t chatId = message->chat->id;
-        User user = Users[message->from->id];
-        State* botState = user.BotState;
+            }
+            std::int64_t chatId = message->chat->id;
+            User user = Users[message->from->id];
+            State* botState = user.BotState;
 
-        if (StringTools::startsWith(message->text, "/start") || StringTools::startsWith(message->text, "/password")) {
-            return;
-        }
-        
-        switch (*botState)
-        {   
-            case W_START:
-                review_bot::InitBot(bot, chatId, IsAdmin(std::to_string(message->from->id)));
-                *botState = W_START;
-                break;
-            case W_NAME:
-                user.eventUser->SetName(message->text);
-                review_bot::CreateEvent(bot, chatId, *(user.eventUser));
-                *botState = CR_EVENT;
-                break;
+            if (StringTools::startsWith(message->text, "/start") || StringTools::startsWith(message->text, "/password")) {
+                return;
+            }
 
-            case W_TIME:
-                user.eventUser->SetTime(TimeFromString(message->text, DATA_FORMAT));
-                review_bot::CreateEvent(bot, chatId, *(user.eventUser));
-                *botState = CR_EVENT;
-                break;
+            switch (*botState)
+            {   
+                case W_START:
+                    review_bot::InitBot(bot, chatId, IsAdmin(message->from->id, PATH_JSON));
+                    *botState = W_START;
+                    break;
+                case W_NAME:
+                    user.eventUser->SetName(message->text);
+                    review_bot::CreateEvent(bot, chatId, *(user.eventUser));
+                    *botState = CR_EVENT;
+                    break;
 
-            case EST: {
-                if (!review_bot::ValidEst(message->text)) {
-                    bot.getApi().sendMessage(chatId, "Неверная оценка: она должна лежать между 0 и 10 включительно!");
-                    return;
+                case W_TIME:
+                    user.eventUser->SetTime(TimeFromString(message->text, DATA_FORMAT));
+                    review_bot::CreateEvent(bot, chatId, *(user.eventUser));
+                    *botState = CR_EVENT;
+                    break;
+
+                case W_NEW_TIME: 
+                    *botState = W_START;
+                    conn.UpdateTime(user.reviewUser->NameEvent(), message->text);
+                    bot.getApi().sendMessage(chatId, "Успешно изменено!");
+                    user.Clear();
+                    review_bot::InitBot(bot, chatId, IsAdmin(message->from->id, PATH_JSON));
+                    break;
+                    
+                case W_YEAR: {
+                    std::cout << message->text;
+                    std::vector<std::string> events = conn.GetEventsBeetwenTime(std::string("01.01.") + message->text,
+                    std::string("01.01.") + std::to_string(std::stoi(message->text) + 1));
+                    if (events.size() == 0 ) {
+                        bot.getApi().sendMessage(chatId, "Мероприятий не найдено!");
+                        return;
+                    }
+                    review_bot::ChooseEvent(bot, chatId, events);
+                    *botState = CHOOSE_EVENT;
+                    break;
                 }
-                switch (*(user.flagTypeQuestion))
-                {
-                    case 0: user.reviewUser->AddActiveEst(message->text); break;
-                    case 1: user.reviewUser->AddStructEst(message->text); break;
-                    case 2: user.reviewUser->AddCommandEst(message->text); break;
-                }   
-                
-                while (*(user.flagQuestion) == user.questions->at(*(user.flagTypeQuestion)).size() ||
-                    NO_QUESTION == user.questions->at(*(user.flagTypeQuestion)).at(*(user.flagQuestion))) {
-                    *(user.flagTypeQuestion) += 1;
-                    *(user.flagQuestion) = 0;
-                    if (*(user.flagTypeQuestion) == END_EST) {
+                case EST: {
+                    if (!review_bot::IsInt(message->text)) {
+                        bot.getApi().sendMessage(chatId, "Неверная оценка: она должна лежать между 0 и 10 включительно!");
+                        return;
+                    }
+                    user.reviewUser->AddEst(message->text);  
+                    *(user.flagQuestion) += 1;
+                    while (user.questions->at(*(user.flagQuestion)) == NO_QUESTION) {
+                        *(user.flagQuestion) += 1;
+                        if (*(user.flagQuestion) == user.questions->size() - 1) {break;}
+                    }
+                    if (*(user.flagQuestion) == user.questions->size() - 1) {
                         review_bot::MoreEventQuestions(bot, chatId);
                         return;
                     }
+                    bot.getApi().sendMessage(chatId, user.questions->at(*(user.flagQuestion)));
+                    break;
                 }
-                bot.getApi().sendMessage(chatId, user.questions->at(*(user.flagTypeQuestion)).at(*(user.flagQuestion)));
-                *(user.flagQuestion) += 1;
-                break;
+
+                case ADDITIONAL_EST: {
+                    user.reviewUser->AddReview(message->text);
+                    conn.AddReview(user.reviewUser->NameEvent(), review_bot::EstString(user.reviewUser->Ests()), hashInt(message->from->id), user.reviewUser->MoreEvent(),
+                    user.reviewUser->AdditionalReview());
+                    *botState = W_START;
+                    bot.getApi().sendMessage(chatId, "Спасибо за отзыв!");
+                    user.Clear();
+                    review_bot::InitBot(bot, chatId, IsAdmin(message->from->id, PATH_JSON));
+
+                    break;
+                }
+                default:
+                    break;
+            }
+        });
+
+
+        bot.getEvents().onCallbackQuery([&bot, &Users, &conn](TgBot::CallbackQuery::Ptr query) {
+            std::string queryText = query->data;
+            std::int64_t chatId = query->message->chat->id;
+            User user = Users[query->from->id];
+            State *botState = user.BotState;
+            
+            if (queryText == EVENT_WORKING) {
+                review_bot::MenuEvent(bot, chatId);
+            }
+            else if (queryText == RETURN_TO_MAIN) {
+                user.Clear();
+                *botState = W_START;
+                review_bot::InitBot(bot, chatId, IsAdmin(query->from->id, PATH_JSON));
+            }
+            else if (queryText == FIND_EVENT) {
+                *botState = W_YEAR;
+                review_bot::ChooseYear(bot, chatId);
+            }
+            else if (queryText == CHANGE_TIME) {
+                *botState = W_NEW_TIME;
+                bot.getApi().sendMessage(chatId, "Введите новую дату в формате дд.мм.ггг:");
+                
+            }
+            else if (queryText == ADD_REVIEW) {
+                *botState = CHOOSE_EVENT_REVIEW_ADD;
+                user.AddReview(new review_bot::Review());
+                std::vector<std::string> possibleEvents = conn.PossibleEvents(hashInt(query->from->id));
+                if (possibleEvents.size() == 0) {
+                    bot.getApi().sendMessage(chatId, "Доступных мероприятий пока нет!");
+                    user.Clear();
+                    *botState = W_START;
+                    review_bot::InitBot(bot, chatId, IsAdmin(query->from->id, PATH_JSON));
+                }
+                else {
+                    review_bot::ChooseEvent(bot, chatId, possibleEvents);
+                }
+                
             }
 
-            case ADDITIONAL_EST: {
-                user.reviewUser->AddReview(message->text);
-                conn.AddReview(*(user.nameEvent) , review_bot::EstString(user.reviewUser->ActiveEst()), 
-                review_bot::EstString(user.reviewUser->StructEst()), review_bot::EstString(user.reviewUser->CommandEst()), 
-                user.reviewUser->AdditionalReview(), user.reviewUser->MoreEvent());
+            // REEEEEEEEEEAAAAAAAADDDDDDDDDDDD REVIEW!!!!!!!!!!!!!!!!!!
+            else if(queryText == SKIPADD) {
+                user.reviewUser->AddReview(NO_ADDITIONAL);
+                conn.AddReview(user.reviewUser->NameEvent(), review_bot::EstString(user.reviewUser->Ests()), hashInt(query->from->id), user.reviewUser->MoreEvent(),
+                user.reviewUser->AdditionalReview());
                 *botState = W_START;
                 bot.getApi().sendMessage(chatId, "Спасибо за отзыв!");
                 user.Clear();
-                review_bot::InitBot(bot, chatId, IsAdmin(std::to_string(message->from->id)));
-                
-                break;
+                review_bot::InitBot(bot, chatId, IsAdmin(query->from->id, PATH_JSON));
             }
-            default:
-                break;
-        }
-    });
+        
+            else if(queryText == CURRENT_YEAR) {
+                review_bot::ChooseEvent(bot, chatId, conn.GetEventsBeetwenTime(std::string("01.01.") + std::to_string(GetTmCurrentDay()->tm_year + 1900), 
+                std::string("01.01.") + std::to_string(GetTmCurrentDay()->tm_year + 1901)));
+                *botState = CHOOSE_EVENT;
+            }
+            else if (queryText == YES || queryText == NO) {
+                *botState = ADDITIONAL_EST;
+                user.reviewUser->SetMoreEvent(queryText == YES);
+                review_bot::AddReviewAdditional(bot, chatId);
+            }
+            else if (queryText == READ_REVIEW) {
+                user.QuestionsByTypes(conn.TypeEventByName(user.reviewUser->NameEvent()));
 
+                std::vector<std::string> ests_all = conn.AllEsts(user.reviewUser->NameEvent());
+                std::string fileDir = review_bot::SaveReviews(user.reviewUser->NameEvent(), GenerateFormatSession(TimeFromString(conn.GetEventName(user.reviewUser->NameEvent()), SQL_DATA_FORMAT)), conn.AllReviews(user.reviewUser->NameEvent()));
 
-    bot.getEvents().onCallbackQuery([&bot, &Users, &conn](TgBot::CallbackQuery::Ptr query) {
-        std::string queryText = query->data;
-        std::int64_t chatId = query->message->chat->id;
-        User user = Users[query->from->id];
-        State *botState = user.BotState;
-        if (*botState == CHOOSE_EVENT_REVIEW_ADD) {
-            user.QuestionsByTypes(conn.TypeEventByName(queryText));
-            *botState = EST;
-            *(user.nameEvent) = queryText;
-            bot.getApi().sendMessage(chatId, user.questions->at(*(user.flagTypeQuestion)).at(*(user.flagQuestion)));  
-            *(user.flagQuestion) += 1;
-        }
-        else if (*botState == CHOOSE_EVENT_REVIEW_READ) {
-            
-            user.QuestionsByTypes(conn.TypeEventByName(queryText));
-            *(user.nameEvent) = queryText;
-
-            std::vector<std::vector<std::string>> ests_all = conn.AllEsts(*(user.nameEvent));
-            std::string fileDir = review_bot::SaveReviews(*(user.nameEvent), GenerateFormatSession(TimeFromString(conn.GetTime(*(user.nameEvent)), SQL_DATA_FORMAT)), conn.AllReviews(*(user.nameEvent)));
-            
-            for(int i = 0; i < 3; i ++ ) {
-                review_bot::vector_string question = user.questions->at(i);
-                if(question.at(0) == NO_QUESTION) {
-                    continue;
-                }
-                for(int j = 0; j < question.size(); j++) {
-                    std::vector<int> ests_type;
-                    for (int k = 0; k < ests_all.size(); k++) { 
-                        
-                        ests_type.push_back(review_bot::SeparateEst(ests_all.at(k).at(i)).at(j));
+                for(std::size_t i = 0; i < user.questions->size(); i ++ ) {
+                    if(user.questions->at(i) == NO_QUESTION) {
+                        continue;
                     }
-                    std::string message = question.at(j) + std::string("\n") + review_bot::StatisticEst(ests_type);
-                    bot.getApi().sendMessage(chatId, message);
-                    
-                } 
+                    std::vector<std::string> ests_question;
+                    for (std::size_t j = 0; j < ests_all.size(); j++) {
+                        ests_question.push_back(review_bot::SeparateEst(ests_all.at(j)).at(i));
+                    }
+                    bot.getApi().sendMessage(chatId, user.questions->at(i) + "\n" + review_bot::StatisticEst(ests_question));
+                }
+                std::ifstream fileSend(fileDir);
+                bot.getApi().sendMessage(chatId, "Хотят ли люди ещё подобных мероприятий? \n " + review_bot::StatisticMore(conn.MoreEvent(user.reviewUser->NameEvent())));
+                if (fileSend.peek() == EOF) {
+                    bot.getApi().sendMessage(chatId, "Отзывов нет!");
+                }
+                else {
+                    bot.getApi().sendDocument(chatId, TgBot::InputFile::fromFile(fileDir, "text/plain"));
+                }
+
+                std::remove(fileDir.c_str());
+                review_bot::InitBot(bot, chatId, true);
+                *botState = W_START;
             }
-            std::ifstream fileSend(fileDir);
-            bot.getApi().sendMessage(chatId, "Хотят ли люди ещё подобных мероприятий? \n " + review_bot::StatisticMore(conn.MoreEvent(*(user.nameEvent))));
-            if (fileSend.peek() == EOF) {
-                bot.getApi().sendMessage(chatId, "Отзывов нет!");
-            }
-            else {
-                bot.getApi().sendDocument(chatId, TgBot::InputFile::fromFile(fileDir, "text/plain"));
-            }
-            
-            std::remove(fileDir.c_str());
-            review_bot::InitBot(bot, chatId, true);
-            *botState = W_START;
-        }
-        
-        if (queryText == YES || queryText == NO) {
-            *botState = ADDITIONAL_EST;
-            user.reviewUser->SetMoreEvent(queryText == YES);
-            review_bot::AddReviewAdditional(bot, chatId);
-        }
-        else if(queryText == SKIPADD) {
-            user.reviewUser->AddReview(NO_ADDITIONAL);
-            conn.AddReview(*(user.nameEvent) , review_bot::EstString(user.reviewUser->ActiveEst()), 
-            review_bot::EstString(user.reviewUser->StructEst()), review_bot::EstString(user.reviewUser->CommandEst()), 
-            user.reviewUser->AdditionalReview(), user.reviewUser->MoreEvent());
-            *botState = W_START;
-            bot.getApi().sendMessage(chatId, "Спасибо за отзыв!");
-            user.Clear();
-            review_bot::InitBot(bot, chatId, IsAdmin(std::to_string(query->from->id)));
-        }
-        else if (queryText == ADD_REVIEW) {
-            *botState = CHOOSE_EVENT_REVIEW_ADD;
-            user.AddReview(new review_bot::Review());
-            review_bot::ChooseEvent(bot, chatId, conn.PossibleEvents());
-            return;
-        }
-        else if(queryText == READ_REVIEW) {
-            *botState = CHOOSE_EVENT_REVIEW_READ;
-            review_bot::ChooseEvent(bot, chatId, conn.PossibleEvents());
-        }
-        else if (queryText == ADD_EVENT || queryText == RETURN_MENU) {
-            if (queryText == ADD_EVENT) {
-                user.AddEvent(new review_bot::Event());
-            }
-            review_bot::CreateEvent(bot, chatId, *(user.eventUser));
-            *botState = CR_EVENT;
-        }
-        else if (queryText == SET_NAME) {
-            review_bot::SetNameState(bot, chatId);
-            *botState = W_NAME;
-        }
 
-        // =========================== SET TIME ===========================
-
-        else if (queryText == SET_TIME) {
-            *botState = W_TIME;
-            review_bot::SetTimeState(bot, chatId);
-        }
-
-        else if (queryText == SET_TIME_NOW) {
-            *botState = CR_EVENT;
-            user.eventUser->SetTime(TimeFromString(GetStringDay(), DATA_FORMAT));
-            review_bot::CreateEvent(bot, chatId, *(user.eventUser));
-        }
-
-        // =========================== ACTIVE TYPE ===========================
-        
-        else if (queryText == SET_ACTIVE) {
-            review_bot::SetBodyState(bot, chatId);
-        }
-
-        else if (queryText == MIND_TYPE || queryText == RUN_TYPE || queryText == COMBO_TYPE || queryText == VIEWER_TYPE) {
-            *botState = CR_EVENT;
-            user.eventUser->SetBody((review_bot::BodyType)GetIndex({MIND_TYPE, RUN_TYPE, COMBO_TYPE, VIEWER_TYPE}, queryText));
-            review_bot::CreateEvent(bot, chatId, *(user.eventUser));
-        }
-
-        // =========================== STRUCT QUESTIONS TYPE ===========================
-        else if (queryText == SET_QUESTION) {
-            review_bot::SetStructState(bot, chatId);
-        }
-        
-        else if (queryText == RELAY_TYPE || queryText == CP_TYPE || queryText == TASKS_TYPE || queryText == NO_TASKS_TYPE) {
-            *botState = CR_EVENT;
-            user.eventUser->SetStruct((review_bot::StructType)GetIndex({CP_TYPE, RELAY_TYPE, TASKS_TYPE, NO_TASKS_TYPE}, queryText));
-            review_bot::CreateEvent(bot, chatId, *(user.eventUser));
-        }
-
-
-        // =========================== COMMAND TYPE ===========================
-        else if (queryText == SET_COMMAND) {
-            review_bot::SetCommandState(bot, chatId);
-        }
-
-        else if (queryText == COMMAND_TYPE || queryText == ALONE_TYPE || queryText == ALL_TYPE) {
-            *botState = CR_EVENT;
-            user.eventUser->SetCommand((review_bot::CommandType)GetIndex({COMMAND_TYPE, ALONE_TYPE, ALL_TYPE}, queryText));
-            review_bot::CreateEvent(bot, chatId, *(user.eventUser));
-        }
-
-        else if (queryText == ADD_EVENT_BD) {
-            if (!user.eventUser->Valid()) {
-                bot.getApi().sendMessage(chatId, "Мероприятие задано не полностью! Проверьте, установили ли вы все поля.");
+            // AAAAAAAAAAAAADDDDDDDDDDDDDDDDDDDDDDDDDDDD EEEEEEEEEEEEEVVVVVVVVVVVVVVVVVEEEEEEEEEEEEEEEEENNNNNNNNNNNNNNNNNTTTTTTTTTTTT
+            else if (queryText == ADD_EVENT || queryText == RETURN_MENU) {
+                if (queryText == ADD_EVENT) {
+                    user.AddEvent(new review_bot::Event());
+                }
+                review_bot::CreateEvent(bot, chatId, *(user.eventUser));
                 *botState = CR_EVENT;
+            }
+            else if (queryText == SET_NAME) {
+                review_bot::SetNameState(bot, chatId);
+                *botState = W_NAME;
+            }
+
+            // =========================== SET TIME ===========================
+
+            else if (queryText == SET_TIME) {
+                *botState = W_TIME;
+                review_bot::SetTimeState(bot, chatId);
+            }
+
+            else if (queryText == SET_TIME_NOW) {
+                *botState = CR_EVENT;
+                user.eventUser->SetTime(TimeFromString(GetStringDay(), DATA_FORMAT));
                 review_bot::CreateEvent(bot, chatId, *(user.eventUser));
             }
-            else {
-                std::vector<int> typesConfig = user.eventUser->Config();
-                conn.AddEvent(user.eventUser->Name(), user.eventUser->Time(), typesConfig[0], typesConfig[1], typesConfig[2]);
-                user.Clear();
-                bot.getApi().editMessageText("Спасибо за мероприятие!", chatId, query->message->messageId);
-                *botState = W_START;
-                review_bot::InitBot(bot, chatId, true);
-                
+
+            // =========================== ACTIVE TYPE ===========================
+
+            else if (queryText == SET_ACTIVE) {
+                review_bot::SetBodyState(bot, chatId);
             }
-        }
-    });
+
+            else if (queryText == MIND_TYPE || queryText == RUN_TYPE || queryText == COMBO_TYPE || queryText == VIEWER_TYPE) {
+                *botState = CR_EVENT;
+                user.eventUser->SetBody((review_bot::BodyType)GetIndex({MIND_TYPE, RUN_TYPE, COMBO_TYPE, VIEWER_TYPE}, queryText));
+                review_bot::CreateEvent(bot, chatId, *(user.eventUser));
+            }
+
+            // =========================== STRUCT QUESTIONS TYPE ===========================
+            else if (queryText == SET_QUESTION) {
+                review_bot::SetStructState(bot, chatId);
+            }
+
+            else if (queryText == RELAY_TYPE || queryText == CP_TYPE || queryText == TASKS_TYPE || queryText == NO_TASKS_TYPE) {
+                *botState = CR_EVENT;
+                user.eventUser->SetStruct((review_bot::StructType)GetIndex({CP_TYPE, RELAY_TYPE, TASKS_TYPE, NO_TASKS_TYPE}, queryText));
+                review_bot::CreateEvent(bot, chatId, *(user.eventUser));
+            }
 
 
-    bot.getEvents().onCommand("start", [&bot, &Users](TgBot::Message::Ptr message) {
-        if (Users.find(message->from->id) == Users.end()) {
-            Users[message->from->id] = User();
+            // =========================== COMMAND TYPE ===========================
+            else if (queryText == SET_COMMAND) {
+                review_bot::SetCommandState(bot, chatId);
+            }
+
+            else if (queryText == COMMAND_TYPE || queryText == ALONE_TYPE || queryText == ALL_TYPE) {
+                *botState = CR_EVENT;
+                user.eventUser->SetCommand((review_bot::CommandType)GetIndex({COMMAND_TYPE, ALONE_TYPE, ALL_TYPE}, queryText));
+                review_bot::CreateEvent(bot, chatId, *(user.eventUser));
+            }
             
+
+            // AAADDDDDDD TOOOOOOOOOOO BD FINALYYYYYYYYYYYYYYYYYY
+            else if (queryText == ADD_EVENT_BD) {
+                if (!user.eventUser->Valid()) {
+                    bot.getApi().sendMessage(chatId, "Мероприятие задано не полностью! Проверьте, установили ли вы все поля.");
+                    *botState = CR_EVENT;
+                    review_bot::CreateEvent(bot, chatId, *(user.eventUser));
+                }
+                else {
+                    std::vector<int> typesConfig = user.eventUser->Config();
+                    conn.AddEvent(user.eventUser->Name(), user.eventUser->Time(), typesConfig[0], typesConfig[1], typesConfig[2]);
+                    user.Clear();
+                    bot.getApi().editMessageText("Спасибо за мероприятие!", chatId, query->message->messageId);
+                    *botState = W_START;
+                    review_bot::InitBot(bot, chatId, true);
+
+                }
+            }
+            // CHOOSE QUERY VALUES
+            else if (*botState == CHOOSE_EVENT) {
+                user.reviewUser->SetNameEvent(queryText);
+                review_bot::ChooseWork(bot, chatId);
+            }
+            
+            else if (*botState == CHOOSE_EVENT_REVIEW_ADD) {
+                user.QuestionsByTypes(conn.TypeEventByName(queryText));
+                *botState = EST;
+                user.reviewUser->SetNameEvent(queryText);
+                bot.getApi().sendMessage(chatId, user.questions->at(*(user.flagQuestion)));  
+
+            }
+        });
+
+
+        bot.getEvents().onCommand("start", [&bot, &Users](TgBot::Message::Ptr message) {
+            if (Users.find(message->from->id) == Users.end()) {
+                Users[message->from->id] = User();
+
+            }
+            State *botState = Users[message->from->id].BotState;
+            *botState = W_START;
+            review_bot::InitBot(bot, message->chat->id, IsAdmin(message->from->id, PATH_JSON));
+        });
+
+        bot.getEvents().onCommand("password", [&bot, &passwordAdmin](TgBot::Message::Ptr message) {
+            std::stringstream ss(message->text);
+            std::vector<std::string> command;
+            std::string item;
+            while(std::getline(ss, item, ' ')) {
+                command.push_back(item);
+            }
+            if (passwordAdmin == command.at(1)) {
+                AddAdmin(message->from->id, PATH_JSON);
+            }
+
+        });
+
+
+        TgBot::TgLongPoll longPoll(bot);
+        while (true) {
+            std::cout << "Long poll started" << std::endl;
+            longPoll.start();
         }
-        State *botState = Users[message->from->id].BotState;
-        *botState = W_START;
-        review_bot::InitBot(bot, message->chat->id, IsAdmin(std::to_string(message->from->id)));
-    });
-
-    bot.getEvents().onCommand("password", [&bot, &passwordAdmin](TgBot::Message::Ptr message) {
-        std::stringstream ss(message->text);
-        std::vector<std::string> command;
-        std::string item;
-        while(std::getline(ss, item, ' ')) {
-            command.push_back(item);
-        }
-        if (passwordAdmin == command.at(1)) {
-            std::ofstream  admins;
-            admins.open("../admins.txt", std::ios::app);
-            admins << std::to_string(message->from->id) << std::endl;
-            admins.close();
-        }
-
-    });
-
-
-    TgBot::TgLongPoll longPoll(bot);
-    while (true) {
-        std::cout << "Long poll started" << std::endl;
-        longPoll.start();
+    }
+    catch (const std::string& ex) {
+        ErrorLog(ex);
     }
 
 }

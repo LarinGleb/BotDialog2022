@@ -1,6 +1,8 @@
 #ifndef __BOT_H__
 #define __BOT_H__
 
+#include <map>
+
 #include <tgbot/tgbot.h>
 
 #include "ReviewBot/ReviewBot.h"
@@ -18,25 +20,30 @@ enum state_t {
     CR_EVENT,
     W_NAME,
     W_TIME,
+    W_YEAR,
+    W_NEW_TIME,
+    CHOOSE_EVENT_YEAR,
     CHOOSE_EVENT_REVIEW_ADD,
-    CHOOSE_EVENT_REVIEW_READ,
+    CHOOSE_EVENT,
     EST,
     ADDITIONAL_EST
 };
 typedef enum state_t State;
-
+typedef review_bot::vector_string (*GetQuestions)(int);
 struct user_t {
     state_t* BotState = new state_t(W_START);
     review_bot::Review* reviewUser = new review_bot::Review();
     review_bot::Event* eventUser = new review_bot::Event();
-    std::vector<review_bot::vector_string>* questions = new std::vector<review_bot::vector_string>();
+    std::vector<std::string>* questions = new std::vector<std::string>();
     int* flagQuestion = new int(0);
-    int* flagTypeQuestion = new int(0);
-    std::string* nameEvent = new std::string("");
+
+    std::map<int, GetQuestions> GetQuestionFunction = {{0, &review_bot::ActiveQuestion}, {1, &review_bot::StructQuestion}, {2, &review_bot::CommandQuestion}, };
     void QuestionsByTypes(std::vector<int> types) {
-        questions->push_back(review_bot::ActiveQuestion((review_bot::BodyType)types.at(0)));
-        questions->push_back(review_bot::StructQuestion((review_bot::StructType)types.at(1)));
-        questions->push_back(review_bot::CommandQuestion((review_bot::CommandType)types.at(2)));
+        for (int i = 0; i < 3; i ++) {
+            for (std::string question: GetQuestionFunction[i](types.at(i))) {
+                questions->push_back(question);
+            }
+        }
     }
 
     void AddEvent(review_bot::Event *event) {
@@ -48,20 +55,20 @@ struct user_t {
     }
 
     void Clear() {
-        BotState = new state_t(W_START);
         reviewUser = new review_bot::Review();
         eventUser = new review_bot::Event();
-        questions = new std::vector<review_bot::vector_string>();
+        questions = new std::vector<std::string>();
         flagQuestion = new int(0);
-        flagTypeQuestion = new int(0);
-        nameEvent = new std::string("");
     }
 
 };
+
 typedef struct user_t User;
-bool IsAdmin(const char* id);
-std::string GetPropertyFromFile(std::string fileDir);
-int GetIndex(const std::string array[], const std::string elem);
+
+int unhashInt(int x);
+int hashInt(int x);
+
+int GetIndex(const std::vector<std::string> array, const std::string elem);
 
 int main(); // main function 
 
