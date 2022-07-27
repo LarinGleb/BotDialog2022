@@ -16,7 +16,6 @@ namespace review_bot {
         bot.getApi().sendMessage(chatId, textEvent, false, 0, createEvent);
         return 0;
     }
-
     int SetTimeState(TgBot::Bot& bot, std::int64_t chatId) {
         TgBot::InlineKeyboardMarkup::Ptr nowTime(new TgBot::InlineKeyboardMarkup);
         nowTime->inlineKeyboard.push_back(CreateLineButtons({{"Поставить сегодняшнюю дату: " + GetStringDay(), SET_TIME_NOW}}));
