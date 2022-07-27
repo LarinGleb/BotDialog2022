@@ -11,13 +11,19 @@
 #define END_EST 2
 #define SEPARATOR_DEFAULT ';'
 #define REVIEW_BOT "Review"
-
+#define CHANGE_TIME "ChangeTime"
 // ----------------------------- FOR ADD REVIEW DEFINES -----------------------------
 #define ADD_REVIEW "AddReview"
 
 #define YES "YesAnswerMore"
 #define NO "NoAnswerMore"
 #define SKIPADD "SkipAdditional"
+#define CURRENT_YEAR "CurrentYear"
+
+#define EVENT_WORKING "EventWorking"
+#define FIND_EVENT "FindEvent"
+
+#define RETURN_TO_MAIN "ReturnToMain"
 // ----------------------------- FOR ADD EVENT DEFINES -----------------------------
 #define ADD_EVENT "AddEvent"
 
@@ -50,6 +56,8 @@ namespace review_bot {
     typedef std::vector<std::string> vector_string;
     int InitBot(TgBot::Bot& bot, std::int64_t chatId, bool admin);
     int CreateEvent(TgBot::Bot& bot, std::int64_t chatId, review_bot::Event event);
+    int MenuEvent(TgBot::Bot& bot, std::int64_t chatId);
+    int ChooseWork(TgBot::Bot& bot, std::int64_t chatId);
 
     int SetNameState(TgBot::Bot &bot, std::int64_t chatId);
     int SetTimeState(TgBot::Bot& bot, std::int64_t chatId);
@@ -58,21 +66,25 @@ namespace review_bot {
     int SetCommandState(TgBot::Bot& bot, std::int64_t chatId);
 
     int ChooseEvent(TgBot::Bot& bot, std::int64_t chatId, review_bot::vector_string names);
+    int ChooseYear(TgBot::Bot& bot, std::int64_t chatId);
+    
     int AddReviewAdditional(TgBot::Bot& bot, std::int64_t chatId);
     int MoreEventQuestions(TgBot::Bot& bot, std::int64_t chatId);
     
-    review_bot::vector_string ActiveQuestion(BodyType type);
-    review_bot::vector_string StructQuestion(StructType type);
-    review_bot::vector_string CommandQuestion(CommandType type);
+    review_bot::vector_string ActiveQuestion(int type);
+    review_bot::vector_string StructQuestion(int type);
+    review_bot::vector_string CommandQuestion(int type);
 
     std::string EstString(review_bot::vector_string ests);
-    bool ValidEst(std::string est);
+    bool IsInt(std::string est);
 
-    std::vector<int> SeparateEst(std::string est);
+    std::vector<std::string> SeparateEst(std::string est);
     
-    std::string StatisticEst(std::vector<int> ests);
+    std::string StatisticEst(std::vector<std::string> ests);
     std::string StatisticMore(std::vector<int> more);
     std::string SaveReviews(std::string nameEvent, std::string data, review_bot::vector_string reviews);
+
+    
 };
 
 #endif

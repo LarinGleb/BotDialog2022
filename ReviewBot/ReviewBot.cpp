@@ -14,8 +14,7 @@ namespace review_bot {
         keyboardInit->inlineKeyboard.push_back(CreateLineButtons({{"Оставить отзыв", ADD_REVIEW}}));
 
         if (admin) {
-            keyboardInit->inlineKeyboard.push_back(CreateLineButtons({{"Добавить мероприятие", ADD_EVENT}}));
-            keyboardInit->inlineKeyboard.push_back(CreateLineButtons({{"Читать отзывы", READ_REVIEW}}));
+            keyboardInit->inlineKeyboard.push_back(CreateLineButtons({{"Работать с мероприятиями", EVENT_WORKING}}));
         }
         bot.getApi().sendMessage(chatId, "Привяу!", false, 0, keyboardInit);
 
