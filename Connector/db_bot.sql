@@ -13,9 +13,8 @@ CREATE TABLE Events (
 
 CREATE TABLE Reviews (
    NameEvent text NOT NULL,
-   ActionEsts text NOT NULL,
-   StructEsts text NOT NULL,
-   CommandEsts text NOT NULL,
-   Review text NOT NULL,
-   More INTEGER NOT NULL
+   Ests text NOT NULL,
+   Cr_ID INTEGER NOT NULL,
+   More INTEGER NOT NULL,
+   Review text NOT NULL
 );

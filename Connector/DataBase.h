@@ -50,16 +50,24 @@ class Connector {
         delete stmt_;
         delete con_;
     }
+    void ExecuteRequest(const std::string request);
+    sql::ResultSet* GetReviewByName(std::string name);
 
     void AddEvent(const std::string name, const time_t data, const int bodyType, const int structType, const int commandType);
-    void AddReview(const std::string name, const std::string activeEst, const std::string structEst, const std::string commandEst, const std::string review, const bool more);
-    std::vector<std::string> PossibleEvents();
+    void AddReview(const std::string name, const std::string ests, const int id, const bool more, const std::string review);
+    void UpdateTime(const std::string name, const std::string time);
+
+    std::vector<std::string> PossibleEvents(const int id);
+
     std::vector<int> TypeEventByName(const std::string name);
-    void ExecuteRequest(const std::string request);
+
     std::vector<std::string> AllReviews(std::string name);
-    std::vector<std::vector<std::string>> AllEsts(std::string name);
-    std::string GetTime(std::string name);
+    std::vector<std::string> AllEsts(std::string name);
     std::vector<int> MoreEvent(std::string name);
+
+    std::string GetEventName(std::string name);
+    std::vector<std::string> GetEventsBeetwenTime(const std::string down_end, const std::string up_end);
+    
 
   private:
     sql::Driver*     driver_;
