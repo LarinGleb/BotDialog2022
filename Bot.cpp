@@ -15,6 +15,7 @@
 #include "ReviewBot/Time/Time.h"
 #include "Error/ErrorSave.h"
 
+#define DEFAULT_JSON
 #ifdef DEFAULT_JSON
 #define PATH_JSON "../defaultSettings.json"
 #else
@@ -87,18 +88,20 @@ int main() {
                         bot.getApi().sendMessage(chatId, "Неверная оценка: она должна лежать между 0 и 10 включительно!");
                         return;
                     }
+		    
                     user.reviewUser->AddEst(message->text);  
-                    *(user.flagQuestion) += 1;
+                    
                     while (user.questions->at(*(user.flagQuestion)) == NO_QUESTION) {
                         *(user.flagQuestion) += 1;
-                        if (*(user.flagQuestion) == user.questions->size() - 1) {break;}
+                        if (*(user.flagQuestion) == user.questions->size()) {review_bot::MoreEventQuestions(bot, chatId);return;}
                     }
-                    if (*(user.flagQuestion) == user.questions->size() - 1) {
+                    if (*(user.flagQuestion) == user.questions->size()) {
                         review_bot::MoreEventQuestions(bot, chatId);
                         return;
                     }
                     bot.getApi().sendMessage(chatId, user.questions->at(*(user.flagQuestion)));
-                    break;
+		    *(user.flagQuestion) += 1;
+		    break;
                 }
 
                 case ADDITIONAL_EST: {
@@ -160,9 +163,6 @@ int main() {
             // REEEEEEEEEEAAAAAAAADDDDDDDDDDDD REVIEW!!!!!!!!!!!!!!!!!!
             else if(queryText == SKIPADD) {
                 user.reviewUser->AddReview(NO_ADDITIONAL);
-                conn.AddReview(user.reviewUser->NameEvent(), review_bot::EstString(user.reviewUser->Ests()), hashInt(query->from->id), user.reviewUser->MoreEvent(),
-                user.reviewUser->AdditionalReview());
-                *botState = W_START;
                 bot.getApi().sendMessage(chatId, "Спасибо за отзыв!");
                 user.Clear();
                 review_bot::InitBot(bot, chatId, IsAdmin(query->from->id, PATH_JSON));
@@ -179,11 +179,11 @@ int main() {
                 review_bot::AddReviewAdditional(bot, chatId);
             }
             else if (queryText == READ_REVIEW) {
-                user.QuestionsByTypes(conn.TypeEventByName(user.reviewUser->NameEvent()));
+                
+		user.QuestionsByTypes(conn.TypeEventByName(user.reviewUser->NameEvent()));
 
                 std::vector<std::string> ests_all = conn.AllEsts(user.reviewUser->NameEvent());
                 std::string fileDir = review_bot::SaveReviews(user.reviewUser->NameEvent(), GenerateFormatSession(TimeFromString(conn.GetEventName(user.reviewUser->NameEvent()), SQL_DATA_FORMAT)), conn.AllReviews(user.reviewUser->NameEvent()));
-
                 for(std::size_t i = 0; i < user.questions->size(); i ++ ) {
                     if(user.questions->at(i) == NO_QUESTION) {
                         continue;
@@ -297,9 +297,10 @@ int main() {
                 user.QuestionsByTypes(conn.TypeEventByName(queryText));
                 *botState = EST;
                 user.reviewUser->SetNameEvent(queryText);
-                bot.getApi().sendMessage(chatId, user.questions->at(*(user.flagQuestion)));  
-
-            }
+                
+		bot.getApi().sendMessage(chatId, user.questions->at(*(user.flagQuestion)));  
+            	*(user.flagQuestion) += 1;
+	    }
         });
 
 

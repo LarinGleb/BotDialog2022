@@ -39,7 +39,8 @@ struct user_t {
 
     std::map<int, GetQuestions> GetQuestionFunction = {{0, &review_bot::ActiveQuestion}, {1, &review_bot::StructQuestion}, {2, &review_bot::CommandQuestion}, };
     void QuestionsByTypes(std::vector<int> types) {
-        for (int i = 0; i < 3; i ++) {
+	if (questions->size() != 0) {return;}
+	for (int i = 0; i < 3; i ++) {
             for (std::string question: GetQuestionFunction[i](types.at(i))) {
                 questions->push_back(question);
             }
@@ -55,10 +56,10 @@ struct user_t {
     }
 
     void Clear() {
-        reviewUser = new review_bot::Review();
-        eventUser = new review_bot::Event();
+        AddReview(new review_bot::Review());
+        AddEvent(new review_bot::Event());
         questions = new std::vector<std::string>();
-        flagQuestion = new int(0);
+        *flagQuestion = 0;
     }
 
 };
