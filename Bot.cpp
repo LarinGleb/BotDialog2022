@@ -15,6 +15,7 @@
 #include "ReviewBot/Time/Time.h"
 #include "Error/ErrorSave.h"
 
+#define DEFAULT_JSON 
 #ifdef DEFAULT_JSON
 #define PATH_JSON "../defaultSettings.json"
 #else
