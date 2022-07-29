@@ -1,0 +1,2 @@
+#cmakedefine DEFAULT_JSON
+#cmakedefine JSON_PATH "@JSON_PATH@"

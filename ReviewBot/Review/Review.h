@@ -13,27 +13,29 @@
 #define NO_ADDITIONAL "none_additional"
 
 // estimation = est
-namespace review_bot {
+namespace review_bot
+{
     typedef std::vector<std::string> vector_string;
-    class Review {
-        private:
-            vector_string ests;
-            std::string name_event;
-            std::string additional_review;
-            bool more_event;
-        public:
-            vector_string Ests();
-            bool MoreEvent();
-            std::string AdditionalReview();
-            std::string NameEvent();
+    class Review
+    {
+    private:
+        vector_string ests;
+        std::string name_event;
+        std::string additional_review;
+        bool more_event;
 
-            void SetMoreEvent(bool need);
-            void AddEst(std::string est);
-            void AddReview(std::string review);
-            void SetNameEvent(std::string name);
+    public:
+        vector_string Ests();
+        bool MoreEvent();
+        std::string AdditionalReview();
+        std::string NameEvent();
+
+        void SetMoreEvent(bool need);
+        void AddEst(std::string est);
+        void AddReview(std::string review);
+        void SetNameEvent(std::string name);
     };
 
 };
-
 
 #endif

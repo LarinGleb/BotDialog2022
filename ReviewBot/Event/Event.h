@@ -8,43 +8,45 @@
 #include "../States.h"
 #include "../Time/Time.h"
 
-namespace review_bot {
-    
-    class Event {
-        private:
-            std::string name = "";
-            time_t time_ = mktime(GetTmCurrentDay());
-            review_bot::BodyType body_type = (review_bot::BodyType)NULL_TYPE;
-            review_bot::StructType struct_type = (review_bot::StructType)NULL_TYPE;
-            review_bot::CommandType command_type = (review_bot::CommandType)NULL_TYPE;
-            //review_bot::MovementType movement_type = (review_bot::MovementType)NULL_TYPE;
-        public:
-            Event() {
-            }
-            void SetName(std::string nameEvent);
-            void SetTime(time_t timeEvent);
-            void SetBody(BodyType type);
-            void SetStruct(StructType type);
-            void SetCommand(CommandType type);
+namespace review_bot
+{
 
-            /*void SetMovement(MovementType type)*/
-            std::string GetBodyType();
-            std::string GetStructType();
-            std::string GetCommandType();
-            /*std::string GetMovementType()*/
+    class Event
+    {
+    private:
+        std::string name = "";
+        time_t time_ = mktime(GetTmCurrentDay());
+        review_bot::EventType body_type = (review_bot::EventType)NULL_TYPE;
+        review_bot::StructType struct_type = (review_bot::StructType)NULL_TYPE;
+        review_bot::CommandType command_type = (review_bot::CommandType)NULL_TYPE;
+        // review_bot::MovementType movement_type = (review_bot::MovementType)NULL_TYPE;
+    public:
+        Event()
+        {
+        }
+        void SetName(std::string nameEvent);
+        void SetTime(time_t timeEvent);
+        void SetBody(EventType type);
+        void SetStruct(StructType type);
+        void SetCommand(CommandType type);
 
-            std::string Name();
-            time_t Time();
+        /*void SetMovement(MovementType type)*/
+        std::string GetEventType();
+        std::string GetStructType();
+        std::string GetCommandType();
+        /*std::string GetMovementType()*/
 
-            std::vector<int> Config();
+        std::string Name();
+        time_t Time();
 
-            std::string Info();
-            void Clear();
+        std::vector<int> Config();
 
-            bool Valid();
+        std::string Info();
+        void Clear();
+
+        bool Valid();
     };
 
-    
 };
 
 #endif

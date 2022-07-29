@@ -1,12 +1,16 @@
 #include <tgbot/tgbot.h>
 
+// merge with Event.cpp
+
 #include "../ReviewBot.h"
 #include "Event.h"
 #include "../../BotTools/BotTools.h"
 #include "../Time/Time.h"
 
-namespace review_bot {
-    int CreateEvent(TgBot::Bot& bot, std::int64_t chatId, review_bot::Event event) {
+namespace review_bot
+{
+    int CreateEvent(TgBot::Bot &bot, std::int64_t chatId, review_bot::Event event)
+    {
         TgBot::InlineKeyboardMarkup::Ptr createEvent(new TgBot::InlineKeyboardMarkup);
         createEvent->inlineKeyboard.push_back(CreateLineButtons({{"Название", SET_NAME}, {"Время", SET_TIME}}));
         createEvent->inlineKeyboard.push_back(CreateLineButtons({{"Вид активности", SET_ACTIVE}, {"Вид заданий", SET_QUESTION}}));
@@ -16,7 +20,8 @@ namespace review_bot {
         bot.getApi().sendMessage(chatId, textEvent, false, 0, createEvent);
         return 0;
     }
-    int SetTimeState(TgBot::Bot& bot, std::int64_t chatId) {
+    int SetTimeState(TgBot::Bot &bot, std::int64_t chatId)
+    {
         TgBot::InlineKeyboardMarkup::Ptr nowTime(new TgBot::InlineKeyboardMarkup);
         nowTime->inlineKeyboard.push_back(CreateLineButtons({{"Поставить сегодняшнюю дату: " + GetStringDay(), SET_TIME_NOW}}));
         nowTime->inlineKeyboard.push_back(ButtonToMenu());
@@ -25,14 +30,16 @@ namespace review_bot {
         return 0;
     }
 
-    int SetNameState(TgBot::Bot &bot, std::int64_t chatId) {
+    int SetNameState(TgBot::Bot &bot, std::int64_t chatId)
+    {
         TgBot::InlineKeyboardMarkup::Ptr name(new TgBot::InlineKeyboardMarkup);
         name->inlineKeyboard.push_back(ButtonToMenu());
         bot.getApi().sendMessage(chatId, "Введите название мероприятия:", false, 0, name);
         return 0;
     }
 
-    int SetBodyState(TgBot::Bot& bot, std::int64_t chatId) {
+    int SetBodyState(TgBot::Bot &bot, std::int64_t chatId)
+    {
         TgBot::InlineKeyboardMarkup::Ptr body(new TgBot::InlineKeyboardMarkup);
         body->inlineKeyboard.push_back(CreateLineButtons({{"Думательная", MIND_TYPE}, {"Бегательная", RUN_TYPE}}));
         body->inlineKeyboard.push_back(CreateLineButtons({{"Зрительная, без участия", VIEWER_TYPE}}));
@@ -42,7 +49,8 @@ namespace review_bot {
         return 0;
     }
 
-    int SetStructState(TgBot::Bot& bot, std::int64_t chatId) { 
+    int SetStructState(TgBot::Bot &bot, std::int64_t chatId)
+    {
         TgBot::InlineKeyboardMarkup::Ptr structQuestions(new TgBot::InlineKeyboardMarkup);
         structQuestions->inlineKeyboard.push_back(CreateLineButtons({{"Эстафеты", RELAY_TYPE}, {"КП", CP_TYPE}}));
         structQuestions->inlineKeyboard.push_back(CreateLineButtons({{"Задания", TASKS_TYPE}, {"Без заданий", NO_TASKS_TYPE}}));
@@ -51,13 +59,15 @@ namespace review_bot {
         return 0;
     }
 
-    int SetCommandState(TgBot::Bot& bot, std::int64_t chatId) {
+    int SetCommandState(TgBot::Bot &bot, std::int64_t chatId)
+    {
         TgBot::InlineKeyboardMarkup::Ptr structQuestions(new TgBot::InlineKeyboardMarkup);
-        structQuestions->inlineKeyboard.push_back(CreateLineButtons({{"По одиночке", ALONE_TYPE}, {"По несколько человек", COMMAND_TYPE}}));    
-        structQuestions->inlineKeyboard.push_back(CreateLineButtons({{"Весь лагерь вместе", ALL_TYPE},}));
+        structQuestions->inlineKeyboard.push_back(CreateLineButtons({{"По одиночке", ALONE_TYPE}, {"По несколько человек", COMMAND_TYPE}}));
+        structQuestions->inlineKeyboard.push_back(CreateLineButtons({
+            {"Весь лагерь вместе", ALL_TYPE},
+        }));
         structQuestions->inlineKeyboard.push_back(ButtonToMenu());
         bot.getApi().sendMessage(chatId, "Выберите разбиение на команды:", false, 0, structQuestions);
         return 0;
-
     }
 }

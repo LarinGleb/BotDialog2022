@@ -23,9 +23,6 @@ message("Included bot tools")
 add_subdirectory(ReviewBot)
 message("Included Review Bot")
 
-add_subdirectory(ReviewBot/Event)
-add_subdirectory(ReviewBot/Review)
-add_subdirectory(ReviewBot/Time)
 add_subdirectory(Error)
 message("Included Review Bot utils")
 

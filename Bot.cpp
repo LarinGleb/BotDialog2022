@@ -1,7 +1,7 @@
 #include <iostream> // standart lib
 #include <algorithm>
 #include <vector>
-#include <functional>  // for hashing
+#include <functional> // for hashing
 #include <map>
 #include <stdio.h>
 #include <tgbot/tgbot.h> // bot th lib
@@ -21,38 +21,39 @@
 #else
 #define PATH_JSON "../Settings.json"
 #endif
-int main() {
-    try {
-        const std::string username = USER_NAME;
-        const std::string hostname = HOST_DB;
-        const std::string password = PASSWORD;
-        db_api::Connector conn(hostname.c_str(), username.c_str(), password.c_str(), DIALOG_DB);
-        std::string token = GetProperty("token", PATH_JSON);
-        std::string passwordAdmin = GetProperty("password", PATH_JSON);
-        TgBot::Bot bot(token);
-        std::map<std::int64_t, User> Users = {};
 
-        bot.getEvents().onAnyMessage([&bot, &Users, &conn](TgBot::Message::Ptr message) {
-            if (Users.count(message->from->id) == 0) {
-                Users[message->from->id] = User();
+int main()
+{
 
-            }
+    const std::string username = USER_NAME;
+    const std::string hostname = HOST_DB;
+    const std::string password = PASSWORD;
+    db_api::Connector conn(hostname.c_str(), username.c_str(), password.c_str(), DIALOG_DB);
+    std::string token = GetProperty("token", PATH_JSON);
+    std::string passwordAdmin = GetProperty("password", PATH_JSON);
+    TgBot::Bot bot(token);
+    std::map<std::int64_t, User> Users = {};
+
+    bot.getEvents().onAnyMessage([&bot, &Users, &conn](TgBot::Message::Ptr message)
+                                 {
             std::int64_t chatId = message->chat->id;
-            User user = Users[message->from->id];
-            State* botState = user.BotState;
+            User* user = &(Users[message->from->id]);
+            // User& user = Users[message->from->id];
 
             if (StringTools::startsWith(message->text, "/start") || StringTools::startsWith(message->text, "/password")) {
                 return;
             }
 
-            switch (*botState)
+            State* state = &(user->state);
+
+            switch (user->BotState)
             {   
                 case W_START:
                     review_bot::InitBot(bot, chatId, IsAdmin(message->from->id, PATH_JSON));
-                    *botState = W_START;
+                    user->BotState = W_START;
                     break;
                 case W_NAME:
-                    user.eventUser->SetName(message->text);
+                    user->eventUser->SetName(message->text);
                     review_bot::CreateEvent(bot, chatId, *(user.eventUser));
                     *botState = CR_EVENT;
                     break;
@@ -117,11 +118,10 @@ int main() {
                 }
                 default:
                     break;
-            }
-        });
+            } });
 
-
-        bot.getEvents().onCallbackQuery([&bot, &Users, &conn](TgBot::CallbackQuery::Ptr query) {
+    bot.getEvents().onCallbackQuery([&bot, &Users, &conn](TgBot::CallbackQuery::Ptr query)
+                                    {
             std::string queryText = query->data;
             std::int64_t chatId = query->message->chat->id;
             User user = Users[query->from->id];
@@ -242,7 +242,7 @@ int main() {
 
             else if (queryText == MIND_TYPE || queryText == RUN_TYPE || queryText == COMBO_TYPE || queryText == VIEWER_TYPE) {
                 *botState = CR_EVENT;
-                user.eventUser->SetBody((review_bot::BodyType)GetIndex({MIND_TYPE, RUN_TYPE, COMBO_TYPE, VIEWER_TYPE}, queryText));
+                user.eventUser->SetBody((review_bot::EventType)GetIndex({MIND_TYPE, RUN_TYPE, COMBO_TYPE, VIEWER_TYPE}, queryText));
                 review_bot::CreateEvent(bot, chatId, *(user.eventUser));
             }
 
@@ -300,42 +300,42 @@ int main() {
                 
 		bot.getApi().sendMessage(chatId, user.questions->at(*(user.flagQuestion)));  
             	*(user.flagQuestion) += 1;
-	    }
-        });
+	    } });
 
-
-        bot.getEvents().onCommand("start", [&bot, &Users](TgBot::Message::Ptr message) {
+    bot.getEvents().onCommand("start", [&bot, &Users](TgBot::Message::Ptr message)
+                              {
             if (Users.find(message->from->id) == Users.end()) {
                 Users[message->from->id] = User();
 
             }
             State *botState = Users[message->from->id].BotState;
             *botState = W_START;
-            review_bot::InitBot(bot, message->chat->id, IsAdmin(message->from->id, PATH_JSON));
-        });
+            review_bot::InitBot(bot, message->chat->id, IsAdmin(message->from->id, PATH_JSON)); });
 
-        bot.getEvents().onCommand("password", [&bot, &passwordAdmin](TgBot::Message::Ptr message) {
-            std::stringstream ss(message->text);
-            std::vector<std::string> command;
-            std::string item;
-            while(std::getline(ss, item, ' ')) {
-                command.push_back(item);
-            }
-            if (passwordAdmin == command.at(1)) {
-                AddAdmin(message->from->id, PATH_JSON);
-            }
-
-        });
-
-
+    bot.getEvents().onCommand("password", [&bot, &passwordAdmin](TgBot::Message::Ptr message)
+                              {
+                                      std::stringstream ss(message->text);
+                                      std::vector<std::string> command;
+                                      std::string item;
+                                      while (std::getline(ss, item, ' '))
+                                      {
+                                          command.push_back(item);
+                                      }
+                                      if (passwordAdmin == command.at(1))
+                                      {
+                                          AddAdmin(message->from->id, PATH_JSON);
+                                      } });
+    try
+    {
         TgBot::TgLongPoll longPoll(bot);
-        while (true) {
+        while (true)
+        {
             std::cout << "Long poll started" << std::endl;
             longPoll.start();
         }
     }
-    catch (const std::string& ex) {
+    catch (const std::string &ex)
+    {
         ErrorLog(ex);
     }
-
 }
