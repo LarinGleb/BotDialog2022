@@ -11,16 +11,16 @@ find_package(OpenSSL REQUIRED)
 find_package(Boost COMPONENTS system REQUIRED)
 find_package(CURL)
 
-include_directories(/usr/local/include /usr/local/mysql/connector-c++-/include/mysqlx/ /usr/local/mysql/connector-c++-/include/mysql/ ${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIR})
+include_directories(/usr/include ${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIR})
 
 target_include_directories(DataBaseLib 
-                           PUBLIC /usr/local/mysql/connector-c++-/include/mysql/
-                           PUBLIC /usr/local/mysql/connector-c++-/include/mysqlx/)
+                           PUBLIC /usr/include
+                           PUBLIC /usr/include/cppconn)
 
 set(FULL_PATH_TO_MYSQL_CONNECTOR_CPP_DIR /usr/local/mysql/connector-c++-/)
-include_directories(${FULL_PATH_TO_MYSQL_CONNECTOR_CPP_DIR}/include)
-link_directories(${FULL_PATH_TO_MYSQL_CONNECTOR_CPP_DIR}/lib64)
+include_directories(/usr/include /usr/include/cppconn)
+link_directories(/usr/lib/x86_64-linux-gnu)
 
-target_link_libraries(DataBaseLib /usr/local/mysql/connector-c++-/lib64/debug/libmysqlcppconn.so.9.8.0.29 /usr/local/mysql/connector-c++-/lib64/debug/libmysqlcppconn8.so.2.8.0.29 ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${CURL_LIBRARIES})
+target_link_libraries(DataBaseLib /usr/lib/x86_64-linux-gnu/libmysqlcppconn.so.7 ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${CURL_LIBRARIES})
 
 message("Added connector")

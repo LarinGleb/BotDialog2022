@@ -8,11 +8,6 @@
 #include <iostream>
 #include <vector>
 
-
-#include <xdevapi.h>
-
-#include "tgbot/tgbot.h"
-
 #define DIALOG_DB "Dialog"
 #define EVENTS_TABLE "Events"
 #define REVIEW_TABLE "Reviews"
