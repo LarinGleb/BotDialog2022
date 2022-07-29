@@ -18,10 +18,12 @@ namespace review_bot {
         return estString;    
     }
 
-    bool IsInt(std::string est) {
-        if (!std::isdigit(est[0])) {
-            return false;
-        }
+    bool IsInt(std::string est) { 
+	for (int i = 0; i < est.size(); i++) {
+       	    if (!std::isdigit(est[i])) {
+                return false;
+            }
+	}
         return std::stoi(est) <= 10 && std::stoi(est) >= 0;
     }
     int MoreEventQuestions(TgBot::Bot& bot, std::int64_t chatId) {
