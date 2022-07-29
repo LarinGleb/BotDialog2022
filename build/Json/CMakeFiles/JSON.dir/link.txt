@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC  -std=c++11 -Wall  -shared -Wl,-soname,libJSON.so -o libJSON.so CMakeFiles/JSON.dir/json.cpp.o 

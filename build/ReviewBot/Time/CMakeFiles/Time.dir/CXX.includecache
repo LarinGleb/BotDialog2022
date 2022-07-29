@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/gleb/CXX/BotDialog/ReviewBot/Time/Time.cpp
+iostream
+-
+sstream
+-
+iomanip
+-
+string
+-
+Time.h
+/home/gleb/CXX/BotDialog/ReviewBot/Time/Time.h
+
+/home/gleb/CXX/BotDialog/ReviewBot/Time/Time.h
+ctime
+-
+iostream
+-
+

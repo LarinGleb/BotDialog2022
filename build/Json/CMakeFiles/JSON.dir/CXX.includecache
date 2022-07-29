@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/gleb/CXX/BotDialog/Error/ErrorSave.h
+iostream
+-
+
+/home/gleb/CXX/BotDialog/Json/json.cpp
+iostream
+-
+fstream
+-
+rapidjson/document.h
+-
+rapidjson/istreamwrapper.h
+-
+rapidjson/writer.h
+-
+rapidjson/stringbuffer.h
+-
+rapidjson/ostreamwrapper.h
+-
+rapidjson/filewritestream.h
+-
+../Error/ErrorSave.h
+/home/gleb/CXX/BotDialog/Error/ErrorSave.h
+json.h
+/home/gleb/CXX/BotDialog/Json/json.h
+
+/home/gleb/CXX/BotDialog/Json/json.h
+iostream
+-
+
