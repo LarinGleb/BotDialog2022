@@ -8,13 +8,13 @@
 #define SQL_DATA_FORMAT "%Y-%m-%d %H%m"
 #define MAX_INTERVAL_DAY "3"
 
-std::string StringFromTime(time_t time, std::string separator);
-time_t TimeFromString(std::string time_s, const char* format);
+std::string StringFromTime(const time_t time, std::string separator);
+time_t TimeFromString(const std::string time_s, const char* format);
 
 tm* GetTmCurrentDay();
 std::string GetStringDay();
 
-std::string TimeToSQL(time_t time);
-std::string GenerateFormatSession(time_t time);
+std::string TimeToSQL(const time_t time);
+std::string GenerateFormatSession(const time_t time);
 
 #endif

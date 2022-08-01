@@ -15,7 +15,8 @@ include_directories(/usr/include ${OPENSSL_INCLUDE_DIR} ${Boost_INCLUDE_DIR})
 
 target_include_directories(DataBaseLib 
                            PUBLIC /usr/include
-                           PUBLIC /usr/include/cppconn)
+                           PUBLIC /usr/include/cppconn
+                           )
 
 set(FULL_PATH_TO_MYSQL_CONNECTOR_CPP_DIR /usr/local/mysql/connector-c++-/)
 include_directories(/usr/include /usr/include/cppconn)
@@ -23,4 +24,4 @@ link_directories(/usr/lib/x86_64-linux-gnu)
 
 target_link_libraries(DataBaseLib /usr/lib/x86_64-linux-gnu/libmysqlcppconn.so.7 ${CMAKE_THREAD_LIBS_INIT} ${OPENSSL_LIBRARIES} ${Boost_LIBRARIES} ${CURL_LIBRARIES})
 
-message("Added connector")
+message("--Added connector")

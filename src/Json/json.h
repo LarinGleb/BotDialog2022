@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-std::string GetJsonString(std::string path);
-std::string GetProperty(std::string property, std::string path);
-bool IsAdmin(int id, std::string path);
-void AddAdmin(int id, std::string path);
+std::string GetJsonString(const std::string path);
+std::string GetProperty(const std::string property, const std::string path);
+bool IsAdmin(const int id, const std::string path);
+void AddAdmin(const int id, const std::string path);
 #endif

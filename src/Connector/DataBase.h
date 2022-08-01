@@ -1,12 +1,12 @@
 #ifndef __DIALOGUE_DB_API_H_INCLUDED__
 #define __DIALOGUE_DB_API_H_INCLUDED__
 
-#include <cppconn/driver.h>
-#include <cppconn/prepared_statement.h>
-
 #include <sstream>
 #include <iostream>
 #include <vector>
+
+#include <cppconn/driver.h>
+#include <cppconn/prepared_statement.h>
 
 #define DIALOG_DB "Dialog"
 #define EVENTS_TABLE "Events"
@@ -48,19 +48,19 @@ class Connector {
     void ExecuteRequest(const std::string request);
     sql::ResultSet* GetReviewByName(std::string name);
 
-    void AddEvent(const std::string name, const time_t data, const int bodyType, const int structType, const int commandType);
+    void AddEvent(const std::string name, const time_t data, const int EventType, const int EventStructType, const int EventCommandType);
     void AddReview(const std::string name, const std::string ests, const int id, const bool more, const std::string review);
     void UpdateTime(const std::string name, const std::string time);
 
     std::vector<std::string> PossibleEvents(const int id);
 
-    std::vector<int> TypeEventByName(const std::string name);
+    int* TypeEventByName(const std::string name);
 
-    std::vector<std::string> AllReviews(std::string name);
-    std::vector<std::string> AllEsts(std::string name);
-    std::vector<int> MoreEvent(std::string name);
+    std::vector<std::string> AllReviews(const std::string name);
+    std::vector<std::string> AllEsts(const std::string name);
+    std::vector<int> MoreEvent(const std::string name);
 
-    std::string GetEventName(std::string name);
+    std::string GetEventName(const std::string name);
     std::vector<std::string> GetEventsBeetwenTime(const std::string down_end, const std::string up_end);
     
 

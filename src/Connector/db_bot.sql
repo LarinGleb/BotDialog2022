@@ -4,9 +4,9 @@ DROP TABLE IF EXISTS Reviews;
 CREATE TABLE Events (
   Name text NOT NULL,
   Time datetime NOT NULL,
-  BodyType int NOT NULL,
-  StructType int NOT NULL,
-  CommandType int NOT NULL,
+  EventType int NOT NULL,
+  EventStructType int NOT NULL,
+  EventCommandType int NOT NULL,
   id int NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (id)
 );

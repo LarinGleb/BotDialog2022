@@ -1,0 +1,5 @@
+#cmakedefine USER_NAME "admin"
+#cmakedefine HOST_DB "localhost"
+#cmakedefine PASSWORD "19572006gG."
+
+#cmakedefine PATH_JSON "../Settings.json"

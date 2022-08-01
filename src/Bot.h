@@ -2,6 +2,7 @@
 #define __BOT_H__
 
 #include <map>
+#include <algorithm>
 
 #include <tgbot/tgbot.h>
 
@@ -13,7 +14,7 @@
 #define HOST_DB "localhost"
 #define PASSWORD "19572006gG."
 
-#define PATH_TO_TEMP_REVIEW "ReviewBot/Review/temp_reviews.txt"
+#define PATH_JSON "../Settings.json"
 
 enum state_t {
     W_START,
@@ -29,44 +30,21 @@ enum state_t {
     ADDITIONAL_EST
 };
 typedef enum state_t State;
-typedef review_bot::vector_string (*GetQuestions)(int);
+
 struct user_t {
-    state_t* BotState = new state_t(W_START);
-    review_bot::Review* reviewUser = new review_bot::Review();
-    review_bot::Event* eventUser = new review_bot::Event();
-    std::vector<std::string>* questions = new std::vector<std::string>();
-    int* flagQuestion = new int(0);
-
-    std::map<int, GetQuestions> GetQuestionFunction = {{0, &review_bot::ActiveQuestion}, {1, &review_bot::StructQuestion}, {2, &review_bot::CommandQuestion}, };
-    void QuestionsByTypes(std::vector<int> types) {
-	if (questions->size() != 0) {return;}
-	for (int i = 0; i < 3; i ++) {
-            for (std::string question: GetQuestionFunction[i](types.at(i))) {
-                questions->push_back(question);
-            }
-        }
+    state_t BotState = W_START;
+    review_bot::Review reviewUser = review_bot::Review();
+    review_bot::Event eventUser = review_bot::Event();
+    std::vector<std::string> questions = {};
+    void QuestionsByTypes(const int types[]) {
+	    if (questions.size() != 0) {return;}
+        questions.insert(std::end(questions), std::begin(review_bot::ActiveQuestion((review_bot::EventType)types[0])), std::end(review_bot::ActiveQuestion((review_bot::EventType)types[0])));
+        questions.insert(std::end(questions), std::begin(review_bot::StructQuestion((review_bot::EventStructType)types[1])), std::end(review_bot::StructQuestion((review_bot::EventStructType)types[1])));
+        questions.insert(std::end(questions), std::begin(review_bot::CommandQuestion((review_bot::EventCommandType)types[2])), std::end(review_bot::ActiveQuestion((review_bot::EventType)types[2])));
     }
-
-    void AddEvent(review_bot::Event *event) {
-        *eventUser = *event;
-    }
-
-    void AddReview(review_bot::Review *review) {
-        *reviewUser = *review;
-    }
-
-    void Clear() {
-        AddReview(new review_bot::Review());
-        AddEvent(new review_bot::Event());
-        questions = new std::vector<std::string>();
-        *flagQuestion = 0;
-    }
-
 };
-
 typedef struct user_t User;
 
-int unhashInt(int x);
 int hashInt(int x);
 
 int GetIndex(const std::vector<std::string> array, const std::string elem);
