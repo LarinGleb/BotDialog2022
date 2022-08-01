@@ -8,8 +8,8 @@
 
 typedef std::map<std::string, std::string> buttonQuery;
 
-TgBot::InlineKeyboardButton::Ptr CreateButtonTG(const std::string textButton, const std::string callBackData);
-std::vector<TgBot::InlineKeyboardButton::Ptr> CreateLineButtons(const buttonQuery button);
-std::vector<TgBot::InlineKeyboardButton::Ptr> ButtonToMenu();
+inline TgBot::InlineKeyboardButton::Ptr CreateButtonTG(const std::string textButton, const std::string callBackData);
+inline std::vector<TgBot::InlineKeyboardButton::Ptr> CreateLineButtons(const buttonQuery button);
+inline std::vector<TgBot::InlineKeyboardButton::Ptr> ButtonToMenu();
 
 #endif

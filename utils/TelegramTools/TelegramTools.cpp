@@ -4,17 +4,16 @@
 
 #include <tgbot/tgbot.h>
 
-#include "BotTools.h"
+#include "TelegramTools.h"
 
-TgBot::InlineKeyboardButton::Ptr CreateButtonTG(const std::string textButton, const std::string callBackData) {
+inline TgBot::InlineKeyboardButton::Ptr CreateButtonTG(const std::string textButton, const std::string callBackData) {
     TgBot::InlineKeyboardButton::Ptr Button(new TgBot::InlineKeyboardButton);
     Button->text = textButton;
     Button->callbackData = callBackData;
     return Button;
 
 }
-std::vector<TgBot::InlineKeyboardButton::Ptr> CreateLineButtons(buttonQuery buttons) {
-
+inline std::vector<TgBot::InlineKeyboardButton::Ptr> CreateLineButtons(const buttonQuery buttons) {
     std::vector<TgBot::InlineKeyboardButton::Ptr> linebuttons;
     for (const std::pair<std::string, std::string> pair : buttons) {
         linebuttons.push_back(CreateButtonTG(pair.first, pair.second));
@@ -22,6 +21,6 @@ std::vector<TgBot::InlineKeyboardButton::Ptr> CreateLineButtons(buttonQuery butt
     return linebuttons;
 }
 
-std::vector<TgBot::InlineKeyboardButton::Ptr> ButtonToMenu() {
+inline std::vector<TgBot::InlineKeyboardButton::Ptr> ButtonToMenu() {
     return CreateLineButtons({{"Назад", RETURN_MENU}});
 }

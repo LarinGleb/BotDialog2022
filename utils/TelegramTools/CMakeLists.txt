@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 
-add_library(TelegramTools SHARED Button.cpp)
+add_library(TelegramTools SHARED TelegramTools.cpp)
 
 message("----Added TelegramTools")
