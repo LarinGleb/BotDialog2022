@@ -6,7 +6,7 @@
 
 #define DATA_FORMAT "%d.%m.%Y"
 #define SQL_DATA_FORMAT "%Y-%m-%d %H%m"
-#define MAX_INTERVAL_DAY "3"
+#define MAX_INTERVAL_DAY "4"
 
 std::string StringFromTime(time_t time, std::string separator);
 time_t TimeFromString(std::string time_s, const char* format);

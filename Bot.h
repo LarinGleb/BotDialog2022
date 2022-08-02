@@ -30,16 +30,16 @@ enum state_t {
 };
 typedef enum state_t State;
 typedef review_bot::vector_string (*GetQuestions)(int);
+
 struct user_t {
     state_t* BotState = new state_t(W_START);
     review_bot::Review* reviewUser = new review_bot::Review();
     review_bot::Event* eventUser = new review_bot::Event();
     std::vector<std::string>* questions = new std::vector<std::string>();
     int* flagQuestion = new int(0);
-
     std::map<int, GetQuestions> GetQuestionFunction = {{0, &review_bot::ActiveQuestion}, {1, &review_bot::StructQuestion}, {2, &review_bot::CommandQuestion}, };
     void QuestionsByTypes(std::vector<int> types) {
-	if (questions->size() != 0) {return;}
+	questions->clear();
 	for (int i = 0; i < 3; i ++) {
             for (std::string question: GetQuestionFunction[i](types.at(i))) {
                 questions->push_back(question);
@@ -58,7 +58,7 @@ struct user_t {
     void Clear() {
         AddReview(new review_bot::Review());
         AddEvent(new review_bot::Event());
-        questions = new std::vector<std::string>();
+        questions->clear();
         *flagQuestion = 0;
     }
 
