@@ -4,38 +4,31 @@
 #define NULL_TYPE -1
 
 namespace review_bot {
-    enum body_t {
-        NONE_BODY = -1,
+    enum EventType {
         MIND,
         RUNNING,
         COMBO,
-        VIEWER
+        VIEWER,
+        NUM_EVENT_TYPE,
+        INVALID_EVENT_TYPE
     };
-    typedef enum body_t BodyType;
 
-    enum struct_t {
-        NONE_STRUCT = -1,
+    enum EventStructType {
         CP,
         RELAY,
         TASKS,
-        NO_TASKS
+        NO_TASKS,
+        NUM_EVENT_STRUCT_TYPE,
+        INVALID_EVENET_STRUCT_TYPE
     };
-    typedef enum struct_t StructType;
 
-    enum command_t {
-        NONE_COMMAND = -1,
+    enum EventCommandType {
         COMMAND,
         ALONE,
-        ALL_TOGETHER
+        ALL_TOGETHER,
+        NUM_EVENT_COMMAND_TYPE,
+        INVALID_EVENT_COMMAND_TYPE
     };
-    typedef enum command_t CommandType;
-
-    /*enum movement_t {
-        NONE_MOVEMENT = -1,
-        ROUTE,
-        FREEDOM
-    };
-    typedef enum movement_t MovementType; */
 
 };
 

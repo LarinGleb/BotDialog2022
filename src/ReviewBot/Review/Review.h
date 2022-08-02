@@ -12,25 +12,30 @@
 #define NO_QUESTION "none_question"
 #define NO_ADDITIONAL "none_additional"
 
+#define MIN_EST 0
+#define MAX_EST 10
+
+#define NEED_MORE_EVENT 1
+#define DONT_NEED_MORE_EVENT 0 
+
 // estimation = est
 namespace review_bot {
-    typedef std::vector<std::string> vector_string;
     class Review {
         private:
-            vector_string ests;
+            std::vector<std::string> ests;
             std::string name_event;
             std::string additional_review;
             bool more_event;
         public:
-            vector_string Ests();
-            bool MoreEvent();
-            std::string AdditionalReview();
-            std::string NameEvent();
+            inline std::vector<std::string> Ests() {return ests;}
+            inline std::string AdditionalReview() {return additional_review;}
+            inline bool MoreEvent() {return more_event;}
+            inline std::string NameEvent() {return name_event;}
 
-            void SetMoreEvent(bool need);
-            void AddEst(std::string est);
-            void AddReview(std::string review);
-            void SetNameEvent(std::string name);
+            inline void AddEst(const std::string est) {ests.push_back(est);}
+            inline void AddReview(const std::string review) {additional_review = review;}
+            inline void SetMoreEvent(const bool need) {more_event = need;}
+            inline void SetNameEvent(const std::string name) {name_event = name;}
     };
 
 };
