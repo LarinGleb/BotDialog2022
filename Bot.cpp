@@ -4,8 +4,10 @@
 #include <functional>  // for hashing
 #include <map>
 #include <stdio.h>
+
 #include <tgbot/tgbot.h> // bot th lib
 
+#include "Connector/DataBaseReview.h"
 #include "Json/json.h"
 #include "ReviewBot/ReviewBot.h"
 #include "Bot.h"
@@ -15,25 +17,26 @@
 #include "ReviewBot/Time/Time.h"
 #include "Error/ErrorSave.h"
 
-#define DEFAULT_JSON
-#ifdef DEFAULT_JSON
-#define PATH_JSON "../defaultSettings.json"
-#else
-#define PATH_JSON "../Settings.json"
-#endif
+#define PATH_JSON "/home/gleb/CXX/BotDialog/defaultSettings.json"
 int main() {
     try {
         const std::string username = USER_NAME;
         const std::string hostname = HOST_DB;
         const std::string password = PASSWORD;
+	bool test = false;
+	bool tech_work =false;
         db_api::Connector conn(hostname.c_str(), username.c_str(), password.c_str(), DIALOG_DB);
-        std::string token = GetProperty("token", PATH_JSON);
+        std::string token = GetProperty((test)? "test_token": "token", PATH_JSON);
         std::string passwordAdmin = GetProperty("password", PATH_JSON);
         TgBot::Bot bot(token);
         std::map<std::int64_t, User> Users = {};
-
-        bot.getEvents().onAnyMessage([&bot, &Users, &conn](TgBot::Message::Ptr message) {
-            if (Users.count(message->from->id) == 0) {
+	char tmp[256];
+	getcwd(tmp, 256);
+        std::cout << "Current working directory: " << tmp << std::endl;
+        bot.getEvents().onAnyMessage([&bot, &Users, &tech_work, &conn](TgBot::Message::Ptr message) {
+            if (message->from->isBot) {return;}
+	    if (tech_work) {bot.getApi().sendMessage(message->from->id, "Я на техработах, вернусь в 17"); return;}
+       	    if (Users.count(message->from->id) == 0) {
                 Users[message->from->id] = User();
 
             }
@@ -91,15 +94,16 @@ int main() {
 		    
                     user.reviewUser->AddEst(message->text);  
                     
-                    while (user.questions->at(*(user.flagQuestion)) == NO_QUESTION) {
-                        *(user.flagQuestion) += 1;
-                        if (*(user.flagQuestion) == user.questions->size()) {review_bot::MoreEventQuestions(bot, chatId);return;}
-                    }
-                    if (*(user.flagQuestion) == user.questions->size()) {
+                    if (*(user.flagQuestion) >= user.questions->size()) {
                         review_bot::MoreEventQuestions(bot, chatId);
                         return;
+
                     }
-                    bot.getApi().sendMessage(chatId, user.questions->at(*(user.flagQuestion)));
+		    while (user.questions->at(*(user.flagQuestion)) == NO_QUESTION) {
+                        *(user.flagQuestion) += 1;
+                        if (*(user.flagQuestion)>= user.questions->size()) {review_bot::MoreEventQuestions(bot, chatId);return;}
+                    }
+		    bot.getApi().sendMessage(chatId, user.questions->at(*(user.flagQuestion)));
 		    *(user.flagQuestion) += 1;
 		    break;
                 }
@@ -163,7 +167,10 @@ int main() {
             // REEEEEEEEEEAAAAAAAADDDDDDDDDDDD REVIEW!!!!!!!!!!!!!!!!!!
             else if(queryText == SKIPADD) {
                 user.reviewUser->AddReview(NO_ADDITIONAL);
-                bot.getApi().sendMessage(chatId, "Спасибо за отзыв!");
+                conn.AddReview(user.reviewUser->NameEvent(), review_bot::EstString(user.reviewUser->Ests()), hashInt(query->from->id), user.reviewUser->MoreEvent(),
+                user.reviewUser->AdditionalReview());
+
+		bot.getApi().sendMessage(chatId, "Спасибо за отзыв!");
                 user.Clear();
                 review_bot::InitBot(bot, chatId, IsAdmin(query->from->id, PATH_JSON));
             }
@@ -179,33 +186,50 @@ int main() {
                 review_bot::AddReviewAdditional(bot, chatId);
             }
             else if (queryText == READ_REVIEW) {
-                
-		user.QuestionsByTypes(conn.TypeEventByName(user.reviewUser->NameEvent()));
+    	        if (user.reviewUser->NameEvent() != "") {
 
-                std::vector<std::string> ests_all = conn.AllEsts(user.reviewUser->NameEvent());
-                std::string fileDir = review_bot::SaveReviews(user.reviewUser->NameEvent(), GenerateFormatSession(TimeFromString(conn.GetEventName(user.reviewUser->NameEvent()), SQL_DATA_FORMAT)), conn.AllReviews(user.reviewUser->NameEvent()));
-                for(std::size_t i = 0; i < user.questions->size(); i ++ ) {
-                    if(user.questions->at(i) == NO_QUESTION) {
-                        continue;
-                    }
-                    std::vector<std::string> ests_question;
-                    for (std::size_t j = 0; j < ests_all.size(); j++) {
-                        ests_question.push_back(review_bot::SeparateEst(ests_all.at(j)).at(i));
-                    }
-                    bot.getApi().sendMessage(chatId, user.questions->at(i) + "\n" + review_bot::StatisticEst(ests_question));
-                }
-                std::ifstream fileSend(fileDir);
-                bot.getApi().sendMessage(chatId, "Хотят ли люди ещё подобных мероприятий? \n " + review_bot::StatisticMore(conn.MoreEvent(user.reviewUser->NameEvent())));
-                if (fileSend.peek() == EOF) {
-                    bot.getApi().sendMessage(chatId, "Отзывов нет!");
-                }
-                else {
-                    bot.getApi().sendDocument(chatId, TgBot::InputFile::fromFile(fileDir, "text/plain"));
-                }
+		
+	            std::vector<int> types = conn.TypeEventByName(user.reviewUser->NameEvent());
+		    
+		    user.QuestionsByTypes(types);
 
-                std::remove(fileDir.c_str());
-                review_bot::InitBot(bot, chatId, true);
-                *botState = W_START;
+		    std::string columns = ("CR_Id;");
+            	
+		    for (int i = 0; i <  user.questions->size(); i ++) {
+		        if (user.questions->at(i) != NO_QUESTION) {
+
+			   columns += std::string("\"\"\"") + user.questions->at(i) + std::string("\"\"\";");
+		        }
+            	    }
+		    columns += "Need_More;Review\n";
+		    std::string fileName  = "/home/gleb/CXX/BotDialog/temp/" + GenerateFormatSession(TimeFromString(conn.GetTime(user.reviewUser->NameEvent()), SQL_DATA_FORMAT)) +"_" + user.reviewUser->NameEvent() + ".csv";
+
+		    std::fstream csvFile;
+		    csvFile.open(fileName, std::ios::out | std::ios::app);
+		    TgBot::InputFile fileCSV = TgBot::InputFile();
+		    fileCSV.data += columns;
+		    
+		    std::vector<ReviewDataBase> reviews = conn.AllStructReviews(user.reviewUser->NameEvent());
+		    if (reviews.size() == 0) {
+			bot.getApi().sendMessage(chatId, "Отзывов пока нет");
+		    } 
+		    else {
+			for (std::size_t i = 0; i < reviews.size(); i++) {
+		            fileCSV.data += reviews.at(i).SaveCSV();
+			}
+			fileCSV.fileName = fileName;
+	                bot.getApi().sendDocument(chatId, std::make_shared<TgBot::InputFile>(fileCSV));	
+		    }
+			
+		   // std::remove(fileName.c_str());
+	       }
+	       else {
+	            bot.getApi().sendMessage(chatId, "Какой-то баг! Пустое имя! Попробуйте ещё раз");
+	       }
+	       review_bot::InitBot(bot, chatId, true);
+               *botState = W_START;
+
+		
             }
 
             // AAAAAAAAAAAAADDDDDDDDDDDDDDDDDDDDDDDDDDDD EEEEEEEEEEEEEVVVVVVVVVVVVVVVVVEEEEEEEEEEEEEEEEENNNNNNNNNNNNNNNNNTTTTTTTTTTTT
@@ -289,7 +313,7 @@ int main() {
             }
             // CHOOSE QUERY VALUES
             else if (*botState == CHOOSE_EVENT) {
-                user.reviewUser->SetNameEvent(queryText);
+		user.reviewUser->SetNameEvent(queryText);
                 review_bot::ChooseWork(bot, chatId);
             }
             
@@ -299,7 +323,7 @@ int main() {
                 user.reviewUser->SetNameEvent(queryText);
                 
 		bot.getApi().sendMessage(chatId, user.questions->at(*(user.flagQuestion)));  
-            	*(user.flagQuestion) += 1;
+	   	*(user.flagQuestion)+=1;
 	    }
         });
 

@@ -1,6 +1,6 @@
 #include <vector>
 #include <algorithm>
-
+#include <string>
 #include "DataBase.h"
 #include "../ReviewBot/Time/Time.h"
 
@@ -16,16 +16,22 @@ namespace db_api {
     }
 
     void Connector::AddReview(const std::string name, const std::string ests, const int id, const bool more, const std::string review) {
-        Connector::ExecuteRequest(std::string("INSERT INTO ") + DIALOG_DB + "." + REVIEW_TABLE + std::string(" VALUES (\"") + name + std::string("\", \"") + ests + 
-        std::string("\",") + std::to_string(id) + std::string(",") + std::to_string((int)more) + std::string(",\"") + review + std::string("\");"));
+        std::string parsed_review = "";
+	for (int i = 0;i < review.size(); i++) {
+	    if (review[i] != '\"' &&review[i] != ';') {
+		    parsed_review += review[i];
+
+	    }
+	}
+	Connector::ExecuteRequest(std::string("INSERT INTO ") + DIALOG_DB + "." + REVIEW_TABLE + std::string(" VALUES (\"") + name + std::string("\", \"") + ests + 
+        std::string("\",") + std::to_string(id) + std::string(",") + std::to_string((int)more) + std::string(",\"") + parsed_review + std::string("\");"));
     }
     sql::ResultSet* Connector::GetReviewByName(std::string name) {
         return stmt_->executeQuery(std::string("SELECT * FROM ") + DIALOG_DB + "." + REVIEW_TABLE + std::string(" WHERE NameEvent = \"") + name + std::string("\";"));
     }
 
     std::vector<int> Connector::TypeEventByName(const std::string name) {
-        sql::ResultSet* typesFromSQL = stmt_->executeQuery(std::string("SELECT * FROM ") + DIALOG_DB + "." + EVENTS_TABLE + std::string(" WHERE Time > CURDATE() - INTERVAL ") 
-        + MAX_INTERVAL_DAY + std::string(" DAY AND Time <= CURDATE() AND name = ") + std::string("\"") + name + "\"");
+        sql::ResultSet* typesFromSQL = stmt_->executeQuery(std::string("SELECT * FROM ") + DIALOG_DB + "." + EVENTS_TABLE + std::string(" WHERE YEAR(Time)=YEAR(CURDATE()) AND name = ") + std::string("\"") + name + "\"");
         std::vector<int> types;
         while(typesFromSQL->next()) {
             types.push_back(typesFromSQL->getInt("BodyType"));
@@ -65,9 +71,8 @@ namespace db_api {
         return names;
     }
     // Get Time event by it name
-    std::string Connector::GetEventName(std::string name) {
-        sql::ResultSet* timeFromDB = stmt_->executeQuery(std::string("SELECT * FROM ") + DIALOG_DB + "." + EVENTS_TABLE + std::string(" WHERE Time > CURDATE() - INTERVAL ") 
-        + MAX_INTERVAL_DAY + std::string(" DAY AND Time <= CURDATE() AND name = ") + std::string("\"") + name + "\"");
+    std::string Connector::GetTime(std::string name) {
+        sql::ResultSet* timeFromDB = stmt_->executeQuery(std::string("SELECT * FROM ") + DIALOG_DB + "." + EVENTS_TABLE + std::string(" WHERE YEAR(Time)=YEAR(CURDATE()) AND name = ") + std::string("\"") + name + "\"");
         std::string timeEvent;
         while(timeFromDB->next()) {
             timeEvent = timeFromDB->getString("Time");
@@ -75,33 +80,21 @@ namespace db_api {
         return timeEvent;
     }
 
-    // Get All reviews event by it name
-    std::vector<std::string> Connector::AllReviews(std::string name) {
-        sql::ResultSet* eventsReviews = Connector::GetReviewByName(name);
-        std::vector<std::string> reviews;
-        while(eventsReviews->next()) {
-            reviews.push_back(eventsReviews->getString("Review"));
-        }
-        return reviews;
-    }
+    std::vector<ReviewDataBase> Connector::AllStructReviews(std::string name) {
+        sql::ResultSet* reviews = Connector::GetReviewByName(name);
+	std::vector<ReviewDataBase> reviewStructs;
+	std::cout << "Name Event: " << name << std::endl;
+	while(reviews->next()) {
+            ReviewDataBase review;
 
-    // Get all ests event by it name
-    std::vector<std::string> Connector::AllEsts(std::string name) {
-        sql::ResultSet* eventsEsts = Connector::GetReviewByName(name);
-        std::vector<std::string> ests;
-        while(eventsEsts->next()) {
-            ests.push_back(eventsEsts->getString("Ests"));
+	    review.cr_id = reviews->getInt("Cr_ID");
+	    review.review = reviews->getString("Review");
+	    review.ests = reviews->getString("Ests");
+	    review.need_more = reviews->getInt("More");
+	    reviewStructs.push_back(review);
         }
-        return ests;
+        std::cout << "Count reviews in DB: " << reviewStructs.size();
+        return reviewStructs;
     }
     
-    std::vector<int> Connector::MoreEvent(std::string name) {
-        sql::ResultSet* eventMore = Connector::GetReviewByName(name);
-        std::vector<int> more;
-        while(eventMore->next()) {
-            more.push_back(eventMore->getInt("More"));
-        }
-        return more;
-    }
-
 };

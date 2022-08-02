@@ -10,6 +10,7 @@
 
 #include "tgbot/tgbot.h"
 
+#include "DataBaseReview.h"
 #define DIALOG_DB "Dialog"
 #define EVENTS_TABLE "Events"
 #define REVIEW_TABLE "Reviews"
@@ -58,11 +59,9 @@ class Connector {
 
     std::vector<int> TypeEventByName(const std::string name);
 
-    std::vector<std::string> AllReviews(std::string name);
-    std::vector<std::string> AllEsts(std::string name);
-    std::vector<int> MoreEvent(std::string name);
+    std::vector<ReviewDataBase> AllStructReviews(std::string name);
 
-    std::string GetEventName(std::string name);
+    std::string GetTime(std::string name);
     std::vector<std::string> GetEventsBeetwenTime(const std::string down_end, const std::string up_end);
     
 
