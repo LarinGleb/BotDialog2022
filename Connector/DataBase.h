@@ -58,7 +58,7 @@ class Connector {
     std::vector<std::string> PossibleEvents(const int id);
 
     std::vector<int> TypeEventByName(const std::string name);
-
+    int GetIdEventByName(const std::string name);
     std::vector<ReviewDataBase> AllStructReviews(std::string name);
 
     std::string GetTime(std::string name);

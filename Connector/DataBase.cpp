@@ -26,8 +26,17 @@ namespace db_api {
 	Connector::ExecuteRequest(std::string("INSERT INTO ") + DIALOG_DB + "." + REVIEW_TABLE + std::string(" VALUES (\"") + name + std::string("\", \"") + ests + 
         std::string("\",") + std::to_string(id) + std::string(",") + std::to_string((int)more) + std::string(",\"") + parsed_review + std::string("\");"));
     }
-    sql::ResultSet* Connector::GetReviewByName(std::string name) {
-        return stmt_->executeQuery(std::string("SELECT * FROM ") + DIALOG_DB + "." + REVIEW_TABLE + std::string(" WHERE NameEvent = \"") + name + std::string("\";"));
+    int Connector::GetIdEventByName(std::string name) {
+	int id = 0;
+	sql::ResultSet* ids = stmt_->executeQuery(std::string("SELECT id FROM ") + DIALOG_DB+ "." + EVENTS_TABLE + std::string(" WHERE Name=\"") + name + std::string("\" AND YEAR(Time)=YEAR(CURDATE());"));
+	while(ids->next()) {
+	    id = ids->getInt("id");
+	}
+	return id;
+    }
+
+    sql::ResultSet* Connector::GetReviewByName(const std::string name) {
+        return stmt_->executeQuery(std::string("SELECT * FROM ") + DIALOG_DB + "." + REVIEW_TABLE + std::string(" WHERE idEvent =") + std::to_string(Connector::GetIdEventByName(name)) + std::string(";"));
     }
 
     std::vector<int> Connector::TypeEventByName(const std::string name) {

@@ -13,6 +13,7 @@ CREATE TABLE Events (
 
 CREATE TABLE Reviews (
    NameEvent text NOT NULL,
+   idEvent INTEGER NOT NULL,
    Ests text NOT NULL,
    Cr_ID INTEGER NOT NULL,
    More INTEGER NOT NULL,
