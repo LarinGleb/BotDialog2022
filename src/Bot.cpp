@@ -16,11 +16,7 @@
 #include "ReviewBot/Event/Event.h"
 #include "Time/Time.h"
 
-<<<<<<< HEAD
 int main()
-=======
-int mai()
->>>>>>> 578e78af4a481b2f261d1801190c5de1f177072c
     const std::string username = USER_NAME;
     std::string token = GetProperty("test_token", PATH_JSON);
     std::string passwordAdmin = GetProperty("password", PATH_JSON);

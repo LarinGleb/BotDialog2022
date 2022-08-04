@@ -55,9 +55,9 @@ namespace review_bot {
     std::string Event::Info() {
         return "Название: " + ((name == "") ? "не задано" : name) + "\n" +
                 "Дата проведения: " + StringFromTime(time_, ".") + "\n" +
-                "Активность: " + ((body_type == NULL_TYPE) ? "не задано" : GetEventType()) + "\n" + 
-                "Структура заданий: " +  ((struct_type == NULL_TYPE) ? "не задано" : GetEventStructType()) + "\n" + 
-                "Разбиение на команды: " + ((command_type == NULL_TYPE) ? "не задано" : GetEventCommandType()) +  "\n";
+                "Активность: " + ((body_type == NULL_TYPE) ? "не задано" : Event::GetEventType()) + "\n" + 
+                "Структура заданий: " +  ((struct_type == NULL_TYPE) ? "не задано" : Event::GetEventStructType()) + "\n" + 
+                "Разбиение на команды: " + ((command_type == NULL_TYPE) ? "не задано" : Event::GetEventCommandType()) +  "\n";
        //         "Перемещение: " + ((movement_type == NULL_TYPE) ? "не задано" : GetMovementType()) + "\n";
     }
     void Event::Clear() {
