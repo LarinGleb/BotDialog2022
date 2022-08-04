@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC  -std=c++11 -Wall -shared -Wl,-soname,libEvent.so -o libEvent.so CMakeFiles/Event.dir/Event.cpp.o CMakeFiles/Event.dir/WorkingEvent.cpp.o CMakeFiles/Event.dir/AddEvent.cpp.o 

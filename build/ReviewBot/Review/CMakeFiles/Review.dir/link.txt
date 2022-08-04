@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC  -std=c++11 -Wall -shared -Wl,-soname,libReview.so -o libReview.so CMakeFiles/Review.dir/Review.cpp.o CMakeFiles/Review.dir/AddReview.cpp.o CMakeFiles/Review.dir/ReadReview.cpp.o 

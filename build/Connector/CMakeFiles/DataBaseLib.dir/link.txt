@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC  -std=c++11 -Wall -shared -Wl,-soname,libDataBaseLib.so -o libDataBaseLib.so CMakeFiles/DataBaseLib.dir/DataBase.cpp.o  /usr/lib/x86_64-linux-gnu/libmysqlcppconn.so.7 /usr/local/lib/libssl.a /usr/local/lib/libcrypto.a -ldl /usr/lib/x86_64-linux-gnu/libboost_system.so.1.74.0 /usr/lib/x86_64-linux-gnu/libcurl.so 

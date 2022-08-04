@@ -17,13 +17,12 @@ namespace db_api {
 
     void Connector::AddReview(const std::string name, const std::string ests, const int id, const bool more, const std::string review) {
         std::string parsed_review = "";
-	for (int i = 0;i < review.size(); i++) {
-	    if (review[i] != '\"' &&review[i] != ';') {
-		    parsed_review += review[i];
-
+	    for (int i = 0;i < review.size(); i++) {
+	        if (review[i] != '\"' &&review[i] != ';') {
+		        parsed_review += review[i];
+	        }
 	    }
-	}
-	Connector::ExecuteRequest(std::string("INSERT INTO ") + DIALOG_DB + "." + REVIEW_TABLE + std::string(" VALUES (\"") + name + std::string("\", \"") + ests + 
+	    Connector::ExecuteRequest(std::string("INSERT INTO ") + DIALOG_DB + "." + REVIEW_TABLE + std::string(" VALUES (\"") + name + std::string("\", \"") + ests + 
         std::string("\",") + std::to_string(id) + std::string(",") + std::to_string((int)more) + std::string(",\"") + parsed_review + std::string("\");"));
     }
 

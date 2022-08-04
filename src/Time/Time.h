@@ -18,3 +18,4 @@ std::string TimeToSQL(const time_t time);
 std::string GenerateFormatSession(const time_t time);
 
 #endif
+
