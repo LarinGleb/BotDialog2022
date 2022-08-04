@@ -137,25 +137,25 @@ int main()
             }
         }
         else if (queryText == READ_REVIEW) {
-    	    if (user.reviewUser->NameEvent() != "") {
+    	    if (user->reviewUser.NameEvent() != "") {
 	
-	        std::vector<int> types = conn.TypeEventByName(user.reviewUser->NameEvent());
+	        int types[] = conn.TypeEventByName(user->reviewUser.NameEvent());
 		
-		    user.QuestionsByTypes(types);
+		    user->QuestionsByTypes(types);
 		    std::string columns = ("CR_Id;");
-		    for (int i = 0; i <  user.questions->size(); i ++) {
-		        if (user.questions->at(i) != NO_QUESTION) {
-			       columns += std::string("\"\"\"") + user.questions->at(i) + std::string("\"\"\";");
+		    for (int i = 0; i <  user->questions.size(); i ++) {
+		        if (user->questions.at(i) != NO_QUESTION) {
+			       columns += std::string("\"\"\"") + user->questions.at(i) + std::string("\"\"\";");
 		        }
             }
 		    columns += "Need_More;Review\n";
-		    std::string fileName  = "/home/gleb/CXX/BotDialog/temp/" + GenerateFormatSession(TimeFromString(conn.GetTime(user.reviewUser->NameEvent()), SQL_DATA_FORMAT)) +"_" + user.reviewUser->NameEvent() + ".csv";
+		    std::string fileName  = "/home/gleb/CXX/BotDialog/temp/" + GenerateFormatSession(TimeFromString(conn.GetTime(user->reviewUser.NameEvent()), SQL_DATA_FORMAT)) +"_" + user->reviewUser.NameEvent() + ".csv";
 		    std::fstream csvFile;
 		    csvFile.open(fileName, std::ios::out | std::ios::app);
 		    TgBot::InputFile fileCSV = TgBot::InputFile();
 		    fileCSV.data += columns;
 
-		    std::vector<ReviewDataBase> reviews = conn.AllStructReviews(user.reviewUser->NameEvent());
+		    std::vector<ReviewDataBase> reviews = conn.AllStructReviews(user->reviewUser.NameEvent());
 		    if (reviews.size() == 0) {
 			    bot.getApi().sendMessage(chatId, "Отзывов пока нет");
 		    } 
@@ -173,7 +173,7 @@ int main()
 	            bot.getApi().sendMessage(chatId, "Какой-то баг! Пустое имя! Попробуйте ещё раз");
 	        }
 	        review_bot::InitBot(bot, chatId, true);
-            *botState = W_START   
+            user->BotState = W_START   
         }
         // REEEEEEEEEEAAAAAAAADDDDDDDDDDDD REVIEW!!!!!!!!!!!!!!!!!!
         else if(queryText == SKIPADD) {
@@ -303,5 +303,9 @@ int main()
     {
         std::cout << "Long poll started" << std::endl;
         longPoll.start();
+        if(GetTmCurrentDay()->tm_hour == 14) {
+            
+            system("mysqldump -u admin --password=19572006gG. Dialog > /home/gleb/CXX/BotDialog/backups/" + GenerateFormatSession(time(0))+ "damp.sql");
+        }
     }
 }

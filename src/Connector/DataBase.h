@@ -5,15 +5,12 @@
 #include <iostream>
 #include <vector>
 
-<<<<<<< HEAD
 #include "tgbot/tgbot.h"
 
 #include "DataBaseReview.h"
-=======
 #include <cppconn/driver.h>
 #include <cppconn/prepared_statement.h>
 
->>>>>>> New architecture project
 #define DIALOG_DB "Dialog"
 #define EVENTS_TABLE "Events"
 #define REVIEW_TABLE "Reviews"
@@ -62,17 +59,9 @@ class Connector {
 
     int* TypeEventByName(const std::string name);
 
-<<<<<<< HEAD
     std::vector<ReviewDataBase> AllStructReviews(std::string name);
 
     std::string GetTime(std::string name);
-=======
-    std::vector<std::string> AllReviews(const std::string name);
-    std::vector<std::string> AllEsts(const std::string name);
-    std::vector<int> MoreEvent(const std::string name);
-
-    std::string GetEventName(const std::string name);
->>>>>>> New architecture project
     std::vector<std::string> GetEventsBeetwenTime(const std::string down_end, const std::string up_end);
     
 
