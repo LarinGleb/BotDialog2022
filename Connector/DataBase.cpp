@@ -15,7 +15,7 @@ namespace db_api {
         std::to_string(structType) + ',' + std::to_string(commandType) + std::string(");"));     
     }
 
-    void Connector::AddReview(const std::string name, const std::string ests, const int id, const bool more, const std::string review) {
+    void Connector::AddReview(const std::string name, const std::string ests, const int id,  const bool more, const std::string review) {
         std::string parsed_review = "";
 	for (int i = 0;i < review.size(); i++) {
 	    if (review[i] != '\"' &&review[i] != ';') {
@@ -23,8 +23,8 @@ namespace db_api {
 
 	    }
 	}
-	Connector::ExecuteRequest(std::string("INSERT INTO ") + DIALOG_DB + "." + REVIEW_TABLE + std::string(" VALUES (\"") + name + std::string("\", \"") + ests + 
-        std::string("\",") + std::to_string(id) + std::string(",") + std::to_string((int)more) + std::string(",\"") + parsed_review + std::string("\");"));
+	Connector::ExecuteRequest(std::string("INSERT INTO ") + DIALOG_DB + "." + REVIEW_TABLE + std::string(" VALUES (\"") + name + std::string("\",") +std::to_string(Connector::GetIdEventByName(name)) + std::string(", \"") + ests + 
+        std::string("\",") + std::to_string(id) + std::string(",") +  std::to_string((int)more) + std::string(",\"") + parsed_review + std::string("\");"));
     }
     int Connector::GetIdEventByName(std::string name) {
 	int id = 0;

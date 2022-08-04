@@ -52,7 +52,7 @@ class Connector {
     sql::ResultSet* GetReviewByName(std::string name);
 
     void AddEvent(const std::string name, const time_t data, const int bodyType, const int structType, const int commandType);
-    void AddReview(const std::string name, const std::string ests, const int id, const bool more, const std::string review);
+    void AddReview(const std::string name, const std::string ests, const int id,  const bool more, const std::string review);
     void UpdateTime(const std::string name, const std::string time);
 
     std::vector<std::string> PossibleEvents(const int id);
